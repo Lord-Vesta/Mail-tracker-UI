@@ -14,6 +14,7 @@ import SidebarSection from "./SidebarSection";
 import UserProfile from "./UserProfile.jsx";
 import { userContext } from "../../context/ContextProvider.jsx";
 import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Sidebar = ({}) => {
   const { active, setActive } = useContext(userContext);
@@ -24,7 +25,12 @@ const Sidebar = ({}) => {
     { name: "Follow-ups", key: "followups", Icon: FiClock },
     { name: "Inbox", key: "inbox", Icon: FiInbox },
   ];
+  const navigate = useNavigate();
 
+  const handleClick = (key) => {
+    setActive(key);
+    navigate(`/${key}`);
+  };
   return (
     <div className="w-55 h-screen flex flex-col bg-linear-to-b from-slate-900 to-slate-800 border-r border-white/5 sticky top-0">
       {/* Logo */}
@@ -51,7 +57,7 @@ const Sidebar = ({}) => {
             label={item.name}
             Icon={item.Icon}
             active={active === item.key}
-            onClick={() => setActive(item.key)}
+            onClick={() => handleClick(item.key)}
           />
         ))}
       </SidebarSection>
