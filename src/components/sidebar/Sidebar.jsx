@@ -19,9 +19,9 @@ import { useNavigate } from "react-router-dom";
 const Sidebar = ({}) => {
   const { active, setActive } = useContext(userContext);
   const menu = [
-    { name: "Dashboars", key: "dashboard", Icon: FiGrid },
+    { name: "Dashboard", key: "dashboard", Icon: FiGrid },
     { name: "Drafts", key: "drafts", Icon: FiEdit3 },
-    { name: "Send Emails", key: "send", Icon: FiSend },
+    { name: "Send Emails", key: "send_mail", Icon: FiSend },
     { name: "Follow-ups", key: "followups", Icon: FiClock },
     { name: "Inbox", key: "inbox", Icon: FiInbox },
   ];
