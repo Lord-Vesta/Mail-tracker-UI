@@ -7,6 +7,7 @@ import { sentStatusConfig } from "../utils/statusConfig.jsx";
 import ComposeEmail from "../components/email/compose email/ComposeEmail.jsx";
 import SentEmailsCard from "../components/email/sent email/SentEmailsCard.jsx";
 import ViewEmailModal from "../components/email/sent email/ViewEmailModal.jsx";
+import EmailDetailModal from "../components/modals/EmailDetailModal.jsx";
 
 const SendEmails = () => {
   const [tab, setTab] = useState("compose");
@@ -32,8 +33,6 @@ const SendEmails = () => {
   const [showDraftPicker, setShowDraftPicker] = useState(false);
 
   const fileRef = useRef(null);
-
-  /* ── recipient chips ── */
 
   const addRecipient = (val) => {
     const v = val.trim().replace(/,$/, "");
@@ -101,6 +100,7 @@ const SendEmails = () => {
         status: "Delivered",
         opens: 0,
         replies: 0,
+        name : email.split("@")[0].replace(/[._]/g, " "),
       }));
 
       setSentList((p) => [...newMails, ...p]);
@@ -137,9 +137,7 @@ const SendEmails = () => {
   });
 
   return (
-    <div className="flex flex-col">
-      {/* Tabs */}
-
+    <div className="flex flex-col overflow-y-hidden h-full">
       <div className="flex border-b-2 border-slate-100 mb-[20px]">
         {[
           ["compose", "Compose Email", <FiEdit3 size={14} />],
@@ -148,7 +146,7 @@ const SendEmails = () => {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-[7px] px-[20px] py-[10px] text-[13.5px] font-semibold border-b-2 transition
+            className={`flex items-center gap-[7px] px-[20px] pb-[10px] text-[13.5px] font-semibold border-b-2 transition
             ${
               tab === key
                 ? "border-indigo-500 text-indigo-500"
@@ -171,69 +169,55 @@ const SendEmails = () => {
           </button>
         ))}
       </div>
+      <div className="flex-1 overflow-y-hidden">
+        {tab === "compose" && (
+          <ComposeEmail
+            recipients={recipients}
+            setRecipients={setRecipients}
+            recipientInput={recipientInput}
+            setRecipientInput={setRecipientInput}
+            subject={subject}
+            setSubject={setSubject}
+            body={body}
+            setBody={setBody}
+            attachments={attachments}
+            setAttachments={setAttachments}
+            sentList={sentList}
+            setSentList={setSentList}
+            showDraftPicker={showDraftPicker}
+            setShowDraftPicker={setShowDraftPicker}
+            DRAFT_TEMPLATES={DRAFT_TEMPLATES}
+            fileRef={fileRef}
+            addFiles={addFiles}
+            removeRecipient={removeRecipient}
+            handleRecipientKey={handleRecipientKey}
+            addRecipient={addRecipient}
+            handleSend={handleSend}
+            sending={sending}
+            sentSuccess={sentSuccess}
+            canSend={canSend}
+            allTo={allTo}
+          />
+        )}
 
-      {/* ── COMPOSE TAB ── */}
-
-      {tab === "compose" && (
-        <ComposeEmail
-          recipients={recipients}
-          setRecipients={setRecipients}
-          recipientInput={recipientInput}
-          setRecipientInput={setRecipientInput}
-          subject={subject}
-          setSubject={setSubject}
-          body={body}
-          setBody={setBody}
-          attachments={attachments}
-          setAttachments={setAttachments}
-          sentList={sentList}
-          setSentList={setSentList}
-          showDraftPicker={showDraftPicker}
-          setShowDraftPicker={setShowDraftPicker}
-          DRAFT_TEMPLATES={DRAFT_TEMPLATES}
-          fileRef={fileRef}
-          addFiles={addFiles}
-          removeRecipient={removeRecipient}
-          handleRecipientKey={handleRecipientKey}
-          addRecipient={addRecipient}
-          handleSend={handleSend}
-          sending={sending}
-          sentSuccess={sentSuccess}
-          canSend={canSend}
-          allTo={allTo}
-        />
-      )}
-
-      {/* ── SENT TAB ── */}
-
-      {tab === "sent" && (
-        <SentEmailsCard
-          filtered={filtered}
-          search={search}
-          setSearch={setSearch}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          statuses={statuses}
-          setTab={setTab}
-          sentStatusConfig={sentStatusConfig}
-          setViewEmail={setViewEmail}
-          setSentList={setSentList}
-        />
-      )}
-
-      {/* View Modal */}
+        {tab === "sent" && (
+          <SentEmailsCard
+            filtered={filtered}
+            search={search}
+            setSearch={setSearch}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            statuses={statuses}
+            setTab={setTab}
+            sentStatusConfig={sentStatusConfig}
+            setViewEmail={setViewEmail}
+            setSentList={setSentList}
+          />
+        )}
+      </div>
 
       {viewEmail && (
-        <ViewEmailModal
-          viewEmail={viewEmail}
-          setViewEmail={setViewEmail}
-          sentStatusConfig={sentStatusConfig}
-          setRecipients={setRecipients}
-          setRecipientInput={setRecipientInput}
-          setSubject={setSubject}
-          setBody={setBody}
-          setTab={setTab}
-        />
+        <EmailDetailModal viewMail={viewEmail} setViewMail={setViewEmail} />
       )}
 
       <style>

@@ -23,7 +23,6 @@ const Sidebar = ({}) => {
     { name: "Drafts", key: "drafts", Icon: FiEdit3 },
     { name: "Send Emails", key: "send_mail", Icon: FiSend },
     { name: "Follow-ups", key: "followups", Icon: FiClock },
-    { name: "Inbox", key: "inbox", Icon: FiInbox },
   ];
   const navigate = useNavigate();
 

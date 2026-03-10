@@ -64,7 +64,6 @@ const Drafts = () => {
 
   return (
     <div className="flex flex-col gap-4">
-
       {/* Header */}
       <div className="flex justify-end">
         <button
@@ -81,9 +80,7 @@ const Drafts = () => {
 
       {/* Table */}
       <div className="bg-white rounded-[14px] border border-slate-100 overflow-hidden shadow-sm">
-
         <table className="w-full text-[13px] border-collapse">
-
           {/* Header */}
           <thead>
             <tr className="bg-[#fafafa] border-b border-slate-100">
@@ -116,7 +113,6 @@ const Drafts = () => {
                   onClick={() => openRow(row, i)}
                   className="border-b border-slate-50 cursor-pointer hover:bg-[#f8f9ff] transition"
                 >
-
                   {/* Title */}
                   <td className="px-[18px] py-[14px]">
                     <span className="bg-indigo-50 text-indigo-500 px-[10px] py-[3px] rounded-full text-[11px] font-semibold">
@@ -148,14 +144,11 @@ const Drafts = () => {
                       <span className="text-slate-200 text-[12px]">—</span>
                     )}
                   </td>
-
                 </tr>
               ))
             )}
           </tbody>
-
         </table>
-
       </div>
 
       {/* Modal */}

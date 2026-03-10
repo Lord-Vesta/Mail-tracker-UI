@@ -39,7 +39,7 @@ const EmailFormCard = ({
   handleSend,
 }) => {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+    <div className="bg-white rounded-2xl border border-slate-100 overflow-y-scroll h-full shadow-sm">
       {/* Header */}
       <div className="px-[22px] py-[16px] border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-[10px]">

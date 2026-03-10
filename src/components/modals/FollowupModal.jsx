@@ -10,6 +10,8 @@ import {
   FiCheck,
   FiRefreshCw,
 } from "react-icons/fi";
+import DraftPicker from "../email/compose email/DraftPicker";
+import { DRAFT_TEMPLATES } from "../../data/dashboardData";
 
 const DAY_MS = 86400000;
 
@@ -42,7 +44,7 @@ const FollowupModal = ({ lead, onClose }) => {
   const name = lead.name || lead.to;
 
   const daysSince = Math.floor(
-    (Date.now() - new Date(lead.sentAt).getTime()) / DAY_MS
+    (Date.now() - new Date(lead.sentAt).getTime()) / DAY_MS,
   );
 
   const hue = (name.charCodeAt(0) * 17) % 360;
@@ -55,7 +57,7 @@ Just following up on my previous email.
 
 Wanted to check if you had a chance to review it.
 
-Best,`
+Best,`,
   );
 
   const [showDraftPicker, setShowDraftPicker] = useState(false);
@@ -150,32 +152,12 @@ Best,`
 
         {/* DRAFT PICKER */}
         {showDraftPicker && (
-          <div className="px-6 py-3 bg-indigo-50 border-b border-slate-200">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-              Load a draft template
-            </p>
-
-            {drafts.map((d, i) => (
-              <button
-                key={i}
-                onClick={() => loadDraft(d)}
-                className="flex gap-2 w-full text-left border border-slate-200 rounded-md p-2 mb-2 bg-white hover:border-indigo-500 hover:bg-indigo-50 transition"
-              >
-                <div className="w-6 h-6 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                  <FiEdit3 size={11} />
-                </div>
-
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold text-slate-900 truncate">
-                    {d.subject}
-                  </p>
-                  <p className="text-[11px] text-slate-400 truncate">
-                    {d.body.replace(/\n/g, " ").slice(0, 60)}...
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
+          <DraftPicker
+            templates={DRAFT_TEMPLATES}
+            setSubject={setSubject}
+            setBody={setMessage}
+            setShowDraftPicker={setShowDraftPicker}
+          />
         )}
 
         {/* CONTEXT */}

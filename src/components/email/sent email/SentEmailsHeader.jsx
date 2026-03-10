@@ -10,7 +10,7 @@ const SentEmailsHeader = ({
   setTab,
 }) => {
   return (
-    <div className="flex items-center justify-between px-[20px] py-[16px] border-b border-slate-100">
+    <div className="flex h-[60px] items-center justify-between px-[20px] py-[16px] border-b border-slate-100">
       <div>
         <h2 className="text-[14px] font-bold text-slate-900">Sent Emails</h2>
 

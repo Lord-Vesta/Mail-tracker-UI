@@ -8,7 +8,7 @@ const tips = [
 const OutreachTipsCard = () => {
 
   return (
-    <div className="bg-gradient-to-br from-indigo-500 to-indigo-400 rounded-[16px] p-[20px] text-white">
+    <div className="bg-gradient-to-br from-indigo-500 to-indigo-400 rounded-[16px] p-[20px] pb-0 text-white">
 
       <h3 className="text-[11.5px] font-bold uppercase tracking-[0.05em] mb-[11px] opacity-80">
         Outreach Tips

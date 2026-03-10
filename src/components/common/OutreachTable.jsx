@@ -1,27 +1,11 @@
-import { useNavigate } from "react-router-dom";
 import { statusConfig, tagConfig } from "../../utils/statusConfig";
 
 const OutreachTable = ({ recentOutreachPreview, setViewMail }) => {
-  const navigate = useNavigate();
-
+  console.log("Rendering OutreachTable with data:", recentOutreachPreview);
   return (
-    <div className="bg-white rounded-[14px] border border-slate-100 shadow-sm flex flex-col overflow-hidden">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-[18px] py-[14px] border-b border-slate-100 shrink-0">
-        <h2 className="text-[13px] font-bold text-slate-900">
-          Recent Outreach
-        </h2>
-
-        <button
-          onClick={() => navigate("/sent-mails")}
-          className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
-        >
-          View all →
-        </button>
-      </div>
-
+    <div className="bg-white border-slate-100 shadow-sm flex flex-col h-full">
       {/* Table container */}
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="flex-1 overflow-y-auto">
         <table className="w-full border-collapse text-[12.5px]">
           {/* Header */}
           <thead className="sticky top-0 z-[1]">
@@ -56,7 +40,7 @@ const OutreachTable = ({ recentOutreachPreview, setViewMail }) => {
                 bg: "#f1f5f9",
                 color: "#374151",
               };
-
+              console.log(row.name.charCodeAt(0), "Hue for", row.name, "is", (row.name.charCodeAt(0) * 17) % 360);
               const hue = (row.name.charCodeAt(0) * 17) % 360;
 
               return (
