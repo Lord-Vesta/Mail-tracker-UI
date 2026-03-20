@@ -67,7 +67,7 @@ const Sidebar = ({}) => {
           label="Settings"
           Icon={FiSettings}
           active={active === "settings"}
-          onClick={() => setActive("settings")}
+          onClick={() => handleClick("settings")}
         />
 
         <UserProfile />

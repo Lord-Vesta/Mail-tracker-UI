@@ -40,7 +40,6 @@ const OutreachTable = ({ recentOutreachPreview, setViewMail }) => {
                 bg: "#f1f5f9",
                 color: "#374151",
               };
-              console.log(row.name.charCodeAt(0), "Hue for", row.name, "is", (row.name.charCodeAt(0) * 17) % 360);
               const hue = (row.name.charCodeAt(0) * 17) % 360;
 
               return (

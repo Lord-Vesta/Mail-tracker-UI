@@ -5,6 +5,9 @@ import Drafts from "./pages/Drafts";
 import SendEmails from "./pages/SendEmails";
 import LandingPage from "./pages/LandingPage";
 import Followups from "./pages/Followups.jsx";
+import Signup from "./pages/Signup.jsx";
+import Login from "./pages/Login.jsx";
+import Settings from "./pages/Settings.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +34,18 @@ export const router = createBrowserRouter([
         path : "/followups",
         element : <Followups/>
       },
+      {
+        path : "signup",
+        element : <Signup/>
+      },
+      {
+        path : "/login",
+        element : <Login/>
+      },
+      {
+        path : "/settings",
+        element : <Settings/>
+      }
     ],
   },
   {
