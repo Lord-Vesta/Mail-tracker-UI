@@ -1,12 +1,15 @@
 import { useContext } from "react";
 import { FiLogOut } from "react-icons/fi";
 import { userContext } from "../../context/ContextProvider";
+import { useNavigate } from "react-router-dom";
 
 const UserProfile = () => {
   const { user, setActive } = useContext(userContext);
   const name = user?.name || "Omar";
+  const navigate = useNavigate();
   const handleLogout = () => {
-    setActive("dashboard");
+    localStorage.removeItem("token");
+    navigate("/");
   };
   return (
     <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition">

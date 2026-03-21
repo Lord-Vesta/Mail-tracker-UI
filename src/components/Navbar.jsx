@@ -22,6 +22,10 @@ const pageTitles = {
     title: "Inbox",
     sub: "View and respond to incoming messages.",
   },
+  settings: {
+    title: "Settings",
+    sub: "Manage your connected Gmail accounts and app preferences.",
+  },
 };
 
 const Navbar = () => {
