@@ -6,5 +6,6 @@ export const apiConfig = {
   USER_LOGOUT: "/api/auth/logout",
   CONNECT_GMAIL: "/api/gmail/connect",
   GMAIL_ACCOUNT : "/api/gmail/accounts",
-
+  SEND_MAIL : "/api/gmail/send",
+  
 };

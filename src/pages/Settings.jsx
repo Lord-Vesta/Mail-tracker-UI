@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
   FiTrash2,
   FiCheckCircle,
@@ -11,6 +11,7 @@ import {
 } from "react-icons/fi";
 import { deleteGmailAccount, getGmailAccounts } from "../utils/api.utils";
 import { toast } from "react-toastify";
+import { userContext } from "../context/ContextProvider";
 
 const GoogleIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24">
@@ -161,42 +162,43 @@ const AVATAR_COLORS = [
 let nextId = 1;
 
 const Settings = () => {
-  const [accounts, setAccounts] = useState([]);
+  // const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
   // Store the full account object to show email in modal
   const [pendingDisconnect, setPendingDisconnect] = useState(null);
 
+  const { accounts, fetchAccounts } = useContext(userContext);
   const handleConnectGmail = () => {
     const token = localStorage.getItem("token");
     window.location.href = `http://localhost:5001/api/gmail/connect?token=${token}`;
   };
 
-  const handleFetchGmailAccounts = async () => {
-    try {
-      const result = await getGmailAccounts();
-      const formatted = result.data.map((acc) => ({
-        id: acc.userId || nextId++, // Use actual ID or fallback to generated one
-        email: acc.email,
-        connectedAt: new Date(acc.createdAt),
-        isPrimary: acc.isPrimary,
-      }));
-      setAccounts(formatted);
-    } catch (error) {
-      toast.error("Failed to fetch Gmail accounts: " + error);
-    }
-  };
+  // const handleFetchGmailAccounts = async () => {
+  //   try {
+  //     const result = await getGmailAccounts();
+  //     const formatted = result.data.map((acc) => ({
+  //       id: acc.userId || nextId++, // Use actual ID or fallback to generated one
+  //       email: acc.email,
+  //       connectedAt: new Date(acc.createdAt),
+  //       isPrimary: acc.isPrimary,
+  //     }));
+  //     setAccounts(formatted);
+  //   } catch (error) {
+  //     toast.error("Failed to fetch Gmail accounts: " + error);
+  //   }
+  // };
 
   console.log(accounts, "accounts in settings page-------------------");
 
   useEffect(() => {
-    handleFetchGmailAccounts();
+    fetchAccounts();
   }, []);
 
   const disconnect = async () => {
     console.log("Disconnecting account:", pendingDisconnect);
     if (!pendingDisconnect) return;
     await deleteGmailAccount(pendingDisconnect.id, pendingDisconnect.email);
-    await handleFetchGmailAccounts();
+    await fetchAccounts();
     toast.success(`${pendingDisconnect.email} disconnected successfully.`);
     setPendingDisconnect(null);
   };

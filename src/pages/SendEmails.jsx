@@ -6,124 +6,17 @@ import { sentStatusConfig } from "../utils/statusConfig.jsx";
 
 import ComposeEmail from "../components/email/compose email/ComposeEmail.jsx";
 import SentEmailsCard from "../components/email/sent email/SentEmailsCard.jsx";
-import ViewEmailModal from "../components/email/sent email/ViewEmailModal.jsx";
 import EmailDetailModal from "../components/modals/EmailDetailModal.jsx";
 
 const SendEmails = () => {
   const [tab, setTab] = useState("compose");
 
-  const [recipients, setRecipients] = useState([]);
-  const [recipientInput, setRecipientInput] = useState("");
-
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
-
-  const [attachments, setAttachments] = useState([]);
-
-  const [sending, setSending] = useState(false);
-  const [sentSuccess, setSentSuccess] = useState(false);
-
   const [sentList, setSentList] = useState(sentEmailsData);
 
-  const [viewEmail, setViewEmail] = useState(null);
-
+  const statuses = ["All", ...new Set(sentList.map((m) => m.status))];
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-
-  const [showDraftPicker, setShowDraftPicker] = useState(false);
-
-  const fileRef = useRef(null);
-
-  const addRecipient = (val) => {
-    const v = val.trim().replace(/,$/, "");
-
-    if (v && !recipients.includes(v)) {
-      setRecipients((r) => [...r, v]);
-    }
-
-    setRecipientInput("");
-  };
-
-  const handleRecipientKey = (e) => {
-    if (["Enter", ",", " "].includes(e.key)) {
-      e.preventDefault();
-      addRecipient(recipientInput);
-    }
-  };
-
-  const removeRecipient = (r) =>
-    setRecipients((rs) => rs.filter((x) => x !== r));
-
-  const allTo = [
-    ...recipients,
-    ...(recipientInput.trim() ? [recipientInput.trim()] : []),
-  ];
-
-  const addFiles = (files) => {
-    const nf = Array.from(files).filter(
-      (f) => !attachments.find((a) => a.name === f.name && a.size === f.size),
-    );
-
-    setAttachments((p) => [...p, ...nf]);
-  };
-
-  const handleSend = () => {
-    const targets = [
-      ...recipients,
-      ...(recipientInput.trim() ? [recipientInput.trim()] : []),
-    ];
-
-    if (!targets.length || !subject.trim() || !body.trim()) return;
-
-    setSending(true);
-
-    setTimeout(() => {
-      const now = new Date();
-
-      const newMails = targets.map((email) => ({
-        id: Date.now() + Math.random(),
-        to: email
-          .split("@")[0]
-          .replace(/[._]/g, " ")
-          .replace(/\b\w/g, (c) => c.toUpperCase()),
-        email,
-        subject,
-        body,
-        sentAt: now,
-        date: now.toLocaleString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        }),
-        status: "Delivered",
-        opens: 0,
-        replies: 0,
-        name : email.split("@")[0].replace(/[._]/g, " "),
-      }));
-
-      setSentList((p) => [...newMails, ...p]);
-
-      setSending(false);
-      setSentSuccess(true);
-
-      setRecipients([]);
-      setRecipientInput("");
-      setSubject("");
-      setBody("");
-      setAttachments([]);
-
-      setTimeout(() => {
-        setSentSuccess(false);
-        setTab("sent");
-      }, 1800);
-    }, 1400);
-  };
-
-  const canSend = allTo.length > 0 && subject.trim() && body.trim();
-
-  const statuses = ["All", ...new Set(sentList.map((m) => m.status))];
+  const [viewEmail, setViewEmail] = useState(null);
 
   const filtered = sentList.filter((m) => {
     const q = search.toLowerCase();
@@ -171,33 +64,7 @@ const SendEmails = () => {
       </div>
       <div className="flex-1 overflow-y-hidden">
         {tab === "compose" && (
-          <ComposeEmail
-            recipients={recipients}
-            setRecipients={setRecipients}
-            recipientInput={recipientInput}
-            setRecipientInput={setRecipientInput}
-            subject={subject}
-            setSubject={setSubject}
-            body={body}
-            setBody={setBody}
-            attachments={attachments}
-            setAttachments={setAttachments}
-            sentList={sentList}
-            setSentList={setSentList}
-            showDraftPicker={showDraftPicker}
-            setShowDraftPicker={setShowDraftPicker}
-            DRAFT_TEMPLATES={DRAFT_TEMPLATES}
-            fileRef={fileRef}
-            addFiles={addFiles}
-            removeRecipient={removeRecipient}
-            handleRecipientKey={handleRecipientKey}
-            addRecipient={addRecipient}
-            handleSend={handleSend}
-            sending={sending}
-            sentSuccess={sentSuccess}
-            canSend={canSend}
-            allTo={allTo}
-          />
+          <ComposeEmail sentList={sentList} setSentList={setSentList} />
         )}
 
         {tab === "sent" && (
