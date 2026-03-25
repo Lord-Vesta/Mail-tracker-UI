@@ -1,6 +1,7 @@
 import { FiEdit3 } from "react-icons/fi";
+import { DRAFT_TEMPLATES } from "../../../data/dashboardData";
 
-const DraftPicker = ({ templates, setSubject, setBody, setShowDraftPicker }) => {
+const DraftPicker = ({ setSubject, setBody, setShowDraftPicker }) => {
 
   return (
     <div className="px-[22px] py-[14px] bg-[#f8faff] border-b border-slate-200">
@@ -11,7 +12,7 @@ const DraftPicker = ({ templates, setSubject, setBody, setShowDraftPicker }) => 
 
       <div className="flex flex-col gap-[7px]">
 
-        {templates.map((d,i)=>(
+        {DRAFT_TEMPLATES.map((d,i)=>(
           <button
             key={i}
             onClick={()=>{

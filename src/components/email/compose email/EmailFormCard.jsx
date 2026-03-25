@@ -15,7 +15,6 @@ import DraftPicker from "./DraftPicker";
 import RecipientInput from "./RecipientInput";
 import AttachmentUpload from "./AttachmentUpload";
 import { useEffect, useRef, useState } from "react";
-import { DRAFT_TEMPLATES } from "../../../data/dashboardData";
 
 const EmailFormCard = ({
   setSubject,
@@ -39,24 +38,31 @@ const EmailFormCard = ({
   const [ccRecipients, setCCRecipients] = useState([]);
   const [bccRecipients, setBCCRecipients] = useState([]);
   const fileRef = useRef(null);
+  const [canSend, setCanSend] = useState(false);
 
+  const { accounts } = useContext(userContext);
+
+  // receipeient handlers
   const addRecipient = (val) => {
     const v = val.trim().replace(/,$/, "");
     if (v && !recipients.includes(v)) {
       setRecipients((r) => [...r, v]);
+      setAllTo((a) => [...a, v]);
     }
     setRecipientInput("");
   };
 
-  const removeCCRecipient = (r) =>
-    setCCRecipients((rs) => rs.filter((x) => x !== r));
-
-  const handleCCRecipientKey = (e) => {
+  const handleRecipientKey = (e) => {
     if (["Enter", ",", " "].includes(e.key)) {
       e.preventDefault();
-      addCCRecipient(ccRecipientInput);
+      addRecipient(recipientInput);
     }
   };
+
+  const removeRecipient = (r) =>
+    setRecipients((rs) => rs.filter((x) => x !== r));
+
+  // cc receipeient handlers
 
   const addCCRecipient = (val) => {
     const v = val.trim().replace(/,$/, "");
@@ -65,6 +71,18 @@ const EmailFormCard = ({
     }
     setCCRecipientInput("");
   };
+
+  const handleCCRecipientKey = (e) => {
+    if (["Enter", ",", " "].includes(e.key)) {
+      e.preventDefault();
+      addCCRecipient(ccRecipientInput);
+    }
+  };
+
+  const removeCCRecipient = (r) =>
+    setCCRecipients((rs) => rs.filter((x) => x !== r));
+
+  // bcc receipeient handlers
 
   const addBCCRecipient = (val) => {
     const v = val.trim().replace(/,$/, "");
@@ -81,27 +99,13 @@ const EmailFormCard = ({
     }
   };
 
-  const handleRecipientKey = (e) => {
-    if (["Enter", ",", " "].includes(e.key)) {
-      e.preventDefault();
-      addRecipient(recipientInput);
-    }
-  };
-
-  const removeRecipient = (r) =>
-    setRecipients((rs) => rs.filter((x) => x !== r));
-
   const removeBCCRecipient = (r) =>
-    setRecipients((rs) => rs.filter((x) => x !== r));
+    setBCCRecipients((rs) => rs.filter((x) => x !== r));
 
-  allTo = [
-    ...recipients,
-    ...(recipientInput.trim() ? [recipientInput.trim()] : []),
-  ];
-
-  useEffect(() => {
-    setAllTo(allTo);
-  }, [allTo]);
+  // setAllTo([
+  //   ...recipients,
+  //   ...(recipientInput.trim() ? [recipientInput.trim()] : []),
+  // ]);
 
   const addFiles = (files) => {
     const nf = Array.from(files).filter(
@@ -109,6 +113,22 @@ const EmailFormCard = ({
     );
 
     setAttachments((p) => [...p, ...nf]);
+  };
+
+  const escapeHTML = (str) => {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  };
+
+  const convertToHTML = (text) => {
+    return text
+      .split("\n")
+      .map((line) =>
+        line.trim() === "" ? "<br/>" : `<p>${escapeHTML(line)}</p>`,
+      )
+      .join("");
   };
 
   const handleSend = () => {
@@ -122,30 +142,21 @@ const EmailFormCard = ({
     setSending(true);
 
     setTimeout(() => {
-      const now = new Date();
-
+      const htmlBody = convertToHTML(body);
       const newMails = targets.map((email) => ({
-        id: Date.now() + Math.random(),
+        gmailAccountId: "1234",
         to: email
           .split("@")[0]
           .replace(/[._]/g, " ")
           .replace(/\b\w/g, (c) => c.toUpperCase()),
-        email,
+        cc: ccRecipients,
+        bcc: bccRecipients,
         subject,
-        body,
-        sentAt: now,
-        date: now.toLocaleString("en-US", {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "numeric",
-          minute: "2-digit",
-        }),
-        status: "Delivered",
-        opens: 0,
-        replies: 0,
-        name: email.split("@")[0].replace(/[._]/g, " "),
+        body: htmlBody,
+        userId: "u123",
       }));
+
+      console.log("New mails:", newMails);
 
       setSentList((p) => [...newMails, ...p]);
 
@@ -160,12 +171,21 @@ const EmailFormCard = ({
 
       setTimeout(() => {
         setSentSuccess(false);
-        setTab("sent");
+        // setTab("sent");
       }, 1800);
     }, 1400);
   };
 
-  const canSend = allTo.length > 0 && subject.trim() && body.trim();
+  useEffect(() => {
+    setAllTo([
+      ...recipients,
+      ...(recipientInput.trim() ? [recipientInput.trim()] : []),
+    ]);
+  }, [recipients, recipientInput, setAllTo]);
+
+  useEffect(() => {
+    setCanSend(allTo.length > 0 && subject.trim() && body.trim());
+  }, [allTo, subject, body]);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-y-scroll h-full shadow-sm">
@@ -204,7 +224,6 @@ const EmailFormCard = ({
 
       {showDraftPicker && (
         <DraftPicker
-          templates={DRAFT_TEMPLATES}
           setSubject={setSubject}
           setBody={setBody}
           setShowDraftPicker={setShowDraftPicker}
@@ -213,6 +232,7 @@ const EmailFormCard = ({
 
       <div className="px-[22px] py-[20px] flex flex-col gap-[14px]">
         <RecipientInput
+          label="To"
           recipients={recipients}
           removeRecipient={removeRecipient}
           recipientInput={recipientInput}
@@ -234,26 +254,26 @@ const EmailFormCard = ({
           <div className="flex flex-col gap-[12px] pt-[4px] pb-[8px] border-l-2 border-indigo-200 pl-[14px]">
             {/* CC Recipients */}
             <RecipientInput
+              label="CC"
+              variant="secondary"
               recipients={ccRecipients}
               removeRecipient={removeCCRecipient}
               recipientInput={ccRecipientInput}
               setRecipientInput={setCCRecipientInput}
               handleRecipientKey={handleCCRecipientKey}
               addRecipient={addCCRecipient}
-              label="CC"
-              variant="secondary"
             />
 
             {/* BCC Recipients */}
             <RecipientInput
+              label="BCC"
+              variant="secondary"
               recipients={bccRecipients}
               removeRecipient={removeBCCRecipient}
               recipientInput={bccRecipientInput}
               setRecipientInput={setBCCRecipientInput}
               handleRecipientKey={handleBCCRecipientKey}
               addRecipient={addBCCRecipient}
-              label="BCC"
-              variant="secondary"
             />
           </div>
         )}

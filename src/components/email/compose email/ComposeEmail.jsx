@@ -24,7 +24,7 @@ const ComposeEmail = ({ sentList, setSentList }) => {
 
       {/* Right */}
       <div className="flex flex-col gap-[14px] overflow-y-auto">
-        <EmailPreviewCard allTo={allTo} subject={subject} body={body}/>
+        {/* <EmailPreviewCard allTo={allTo} subject={subject} body={body}/> */}
         <OutreachTipsCard />
         <QuickStatsCard sentList={sentList} />
       </div>
