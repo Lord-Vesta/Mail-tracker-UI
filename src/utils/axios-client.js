@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_URL } from "./Api.config";
+import { API_URL } from "./api.config";
 import { toast } from "react-toastify";
 
 // Create Axios instance

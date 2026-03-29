@@ -13,7 +13,6 @@ const SendEmails = () => {
 
   const [sentList, setSentList] = useState(sentEmailsData);
 
-  const statuses = ["All", ...new Set(sentList.map((m) => m.status))];
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [viewEmail, setViewEmail] = useState(null);
@@ -63,29 +62,14 @@ const SendEmails = () => {
         ))}
       </div>
       <div className="flex-1 overflow-y-hidden">
-        {tab === "compose" && (
-          <ComposeEmail sentList={sentList} setSentList={setSentList} />
-        )}
+        {tab === "compose" && <ComposeEmail />}
 
         {tab === "sent" && (
-          <SentEmailsCard
-            filtered={filtered}
-            search={search}
-            setSearch={setSearch}
-            statusFilter={statusFilter}
-            setStatusFilter={setStatusFilter}
-            statuses={statuses}
-            setTab={setTab}
-            sentStatusConfig={sentStatusConfig}
-            setViewEmail={setViewEmail}
-            setSentList={setSentList}
-          />
+          <SentEmailsCard setTab={setTab} setViewEmail={setViewEmail} />
         )}
       </div>
 
-      {viewEmail && (
-        <EmailDetailModal viewMail={viewEmail} setViewMail={setViewEmail} />
-      )}
+
 
       <style>
         {`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}

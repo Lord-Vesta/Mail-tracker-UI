@@ -184,7 +184,6 @@ const EmailFormCard = ({
 
       await sendEmail(formData);
 
-      setSentList((p) => [...newMails, ...p]);
       setSentSuccess(true);
       setRecipients([]);
       setRecipientInput("");

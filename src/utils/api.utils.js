@@ -1,6 +1,7 @@
 import { apiConfig } from "./api.config";
 import axiosclient from "./axios-client";
-const { USER_SINGUP, USER_LOGIN, GMAIL_ACCOUNT, SEND_MAIL } = apiConfig;
+const { USER_SINGUP, USER_LOGIN, GMAIL_ACCOUNT, SEND_MAIL, GET_SENT_EMAILS } =
+  apiConfig;
 
 export const signupUser = async (userData) => {
   try {
@@ -15,7 +16,6 @@ export const loginUser = async (userData) => {
   try {
     console.log("Logging in with:", userData);
     const response = await axiosclient.post(USER_LOGIN, userData);
-    console.log(response, "response in loginUser api-----------");
     return response.data;
   } catch (error) {
     console.log(error, "error in loginUser api--------");
@@ -48,6 +48,20 @@ export const sendEmail = async (emailData) => {
     const response = await axiosclient.post(SEND_MAIL, emailData, {
       headers: {
         "Content-Type": "application/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response.data.message;
+  }
+};
+
+export const getSentEmails = async (gmailAccountId, userId) => {
+  try {
+    const response = await axiosclient.get(GET_SENT_EMAILS, {
+      params: {
+        gmailAccountId: gmailAccountId,
+        userId: userId,
       },
     });
     return response.data;

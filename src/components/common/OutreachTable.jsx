@@ -15,8 +15,8 @@ const OutreachTable = ({ recentOutreachPreview, setViewMail }) => {
                 "Email Preview",
                 "Sent Date",
                 "Status",
-                "Company",
-                "Campaign",
+                // "Company",
+                // "Campaign",
               ].map((h) => (
                 <th
                   key={h}
@@ -40,7 +40,7 @@ const OutreachTable = ({ recentOutreachPreview, setViewMail }) => {
                 bg: "#f1f5f9",
                 color: "#374151",
               };
-              const hue = (row.name.charCodeAt(0) * 17) % 360;
+              const hue = ((row.name?.charCodeAt(0) || 65) * 17) % 360;
 
               return (
                 <tr
@@ -100,14 +100,14 @@ const OutreachTable = ({ recentOutreachPreview, setViewMail }) => {
                   </td>
 
                   {/* Company */}
-                  <td className="px-[14px] py-[10px]">
+                  {/* <td className="px-[14px] py-[10px]">
                     <span className="text-[12px] text-gray-700 font-medium">
                       {row.org}
                     </span>
-                  </td>
+                  </td> */}
 
                   {/* Campaign */}
-                  <td className="px-[14px] py-[10px]">
+                  {/* <td className="px-[14px] py-[10px]">
                     <span
                       className="text-[10.5px] font-semibold px-[8px] py-[3px] rounded-full"
                       style={{
@@ -117,7 +117,7 @@ const OutreachTable = ({ recentOutreachPreview, setViewMail }) => {
                     >
                       {row.tag}
                     </span>
-                  </td>
+                  </td> */}
                 </tr>
               );
             })}

@@ -1,4 +1,5 @@
 import { FiSearch, FiFilter, FiPlus } from "react-icons/fi";
+import { sentEmailsData } from "../../../data/dashboardData";
 
 const SentEmailsHeader = ({
   filtered,
@@ -6,9 +7,9 @@ const SentEmailsHeader = ({
   setSearch,
   statusFilter,
   setStatusFilter,
-  statuses,
   setTab,
 }) => {
+    const statuses = ["All", ...new Set(sentEmailsData.map((m) => m.status))];
   return (
     <div className="flex h-[60px] items-center justify-between px-[20px] py-[16px] border-b border-slate-100">
       <div>
