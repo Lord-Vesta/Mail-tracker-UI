@@ -42,8 +42,13 @@ const EmailFormCard = ({
   const [bccRecipients, setBCCRecipients] = useState([]);
   const fileRef = useRef(null);
   const [canSend, setCanSend] = useState(false);
+  const [containsLinks, setContainsLinks] = useState(false);
 
   const { accounts } = useContext(userContext);
+
+  const hasLinks = (text) => {
+    return /(https?:\/\/|<a\s+href=)/i.test(text);
+  };
 
   // receipeient handlers
   const addRecipient = (val) => {
@@ -170,9 +175,7 @@ const EmailFormCard = ({
       formData.append("cc", JSON.stringify(ccRecipients));
       formData.append("bcc", JSON.stringify(bccRecipients));
 
-      const attachmentIds = attachments
-        ?.filter((a) => a.id)
-        .map((a) => a.id);
+      const attachmentIds = attachments?.filter((a) => a.id).map((a) => a.id);
 
       formData.append("attachmentIds", JSON.stringify(attachmentIds || []));
 
@@ -208,6 +211,10 @@ const EmailFormCard = ({
   useEffect(() => {
     setCanSend(allTo.length > 0 && subject.trim() && body.trim());
   }, [allTo, subject, body]);
+
+  useEffect(() => {
+    setContainsLinks(hasLinks(body));
+  }, [body]);
 
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-y-scroll h-full shadow-sm">
@@ -329,6 +336,15 @@ const EmailFormCard = ({
             placeholder="Write your email here…"
             className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] resize-none leading-[1.65] text-slate-700 bg-white outline-none transition focus:border-indigo-500"
           />
+          {!containsLinks && body.trim() && (
+            <div className="flex items-start gap-[6px] text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-[8px] px-[10px] py-[8px]">
+              <FiLink2 size={12} className="mt-[2px]" />
+              <span>
+                Click tracking works only when your email contains links. Add at
+                least one link to track recipient clicks.
+              </span>
+            </div>
+          )}
 
           <p className="text-right text-[11px] text-slate-300">
             {body.length} chars

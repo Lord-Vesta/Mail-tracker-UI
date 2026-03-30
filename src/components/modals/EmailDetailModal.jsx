@@ -1,4 +1,5 @@
 import { FiX } from "react-icons/fi";
+import { BsPaperclip } from "react-icons/bs";
 
 const statusColors = {
   Replied: "bg-green-100 text-green-700",
@@ -8,6 +9,7 @@ const statusColors = {
 };
 
 const EmailDetailModal = ({ viewMail, setViewMail }) => {
+  console.log(viewMail, "-------------------");
   if (!viewMail) return null;
 
   const hue = (viewMail.name.charCodeAt(0) * 17) % 360;
@@ -97,6 +99,54 @@ const EmailDetailModal = ({ viewMail, setViewMail }) => {
 
           <div className="border-t border-slate-100"></div>
 
+          {viewMail.attachmentsMeta?.length > 0 && (
+            <>
+              <div className="border-t border-slate-100"></div>
+
+              <div>
+                <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-[8px]">
+                  Attachments
+                </p>
+
+                <div className="flex flex-col gap-[8px]">
+                  {viewMail.attachmentsMeta.map((file, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-[10px] px-[12px] py-[8px] hover:bg-slate-100 transition"
+                    >
+                      {/* Left */}
+                      <div className="flex items-center gap-[8px] min-w-0">
+                        <div className="w-8 h-8 rounded-[8px] bg-indigo-50 text-indigo-500 flex items-center justify-center text-[11px] font-bold">
+                          <BsPaperclip />
+                        </div>
+
+                        <div className="flex flex-col min-w-0">
+                          <p className="text-[12.5px] font-semibold text-slate-800 truncate">
+                            {file.filename}
+                          </p>
+                          <p className="text-[10px] text-slate-400">
+                            {file.mimeType}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right */}
+                      <button
+                        className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-600"
+                        onClick={() => {
+                          // future download logic
+                          console.log("Download:", file);
+                        }}
+                      >
+                        Download
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
           {/* Stats */}
           <div className="grid grid-cols-4 gap-[10px]">
             <div className="bg-slate-50 border border-slate-100 rounded-[12px] px-[14px] py-[12px]">
@@ -108,14 +158,14 @@ const EmailDetailModal = ({ viewMail, setViewMail }) => {
               </p>
             </div>
 
-            <div className="bg-slate-50 border border-slate-100 rounded-[12px] px-[14px] py-[12px]">
+            {/* <div className="bg-slate-50 border border-slate-100 rounded-[12px] px-[14px] py-[12px]">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-[4px]">
                 Company
               </p>
               <p className="text-[12px] font-semibold text-slate-900">
                 {viewMail.org ?? "—"}
               </p>
-            </div>
+            </div> */}
 
             <div className="bg-slate-50 border border-slate-100 rounded-[12px] px-[14px] py-[12px]">
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-[4px]">
@@ -138,13 +188,13 @@ const EmailDetailModal = ({ viewMail, setViewMail }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-[22px] py-[14px] border-t border-slate-100 flex items-center justify-between bg-slate-50">
-          <p className="text-[11.5px] text-slate-300 font-medium">
+        <div className="px-[22px] py-[14px] border-t border-slate-100 flex items-center justify-end bg-slate-50">
+          {/* <p className="text-[11.5px] text-slate-300 font-medium">
             Campaign:{" "}
             <span className="text-slate-400 font-semibold">
               {viewMail.tag ?? "—"}
             </span>
-          </p>
+          </p> */}
 
           <div className="flex gap-[8px]">
             <button

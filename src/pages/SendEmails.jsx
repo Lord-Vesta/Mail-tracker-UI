@@ -46,7 +46,7 @@ const SendEmails = () => {
             }`}
           >
             {icon} {label}
-            {key === "sent" && sentList.length > 0 && (
+            {/* {key === "sent" && sentList.length > 0 && (
               <span
                 className={`text-[10px] font-bold px-[6px] py-[1px] rounded-full
                 ${
@@ -57,7 +57,7 @@ const SendEmails = () => {
               >
                 {sentList.length}
               </span>
-            )}
+            )} */}
           </button>
         ))}
       </div>
@@ -68,8 +68,6 @@ const SendEmails = () => {
           <SentEmailsCard setTab={setTab} setViewEmail={setViewEmail} />
         )}
       </div>
-
-
 
       <style>
         {`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}
