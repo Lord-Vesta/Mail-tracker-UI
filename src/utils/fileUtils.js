@@ -6,3 +6,10 @@ export const formatBytes = (b) =>
       : `${(b / 1048576).toFixed(1)} MB`;
 
 export const isImg = (file) => file?.type?.startsWith("image/");
+
+export const convertToHtml = (text) => {
+  return text
+    .split("\n")
+    .map((line) => `<p>${line}</p>`)
+    .join("");
+};

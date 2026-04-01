@@ -8,4 +8,7 @@ export const apiConfig = {
   GMAIL_ACCOUNT: "/api/gmail/accounts",
   SEND_MAIL: "/api/gmail/send",
   GET_SENT_EMAILS: "/api/gmail/",
+  DOWNLOAD_ATTACHMENT: "/api/gmail/attachment",
+  DRAFTS: "/api/draft/",
+  UPDATE_DRAFT: "/api/draft/:id",
 };

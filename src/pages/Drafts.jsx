@@ -1,22 +1,16 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { FiPaperclip, FiPlus } from "react-icons/fi";
 import DraftModal from "../components/drafts/DraftModal";
+import {
+  createDraftApi,
+  getDraftsApi,
+  updateDraftApi,
+} from "../utils/api.utils";
+import { userContext } from "../context/ContextProvider";
+import { convertToHtml } from "../utils/fileUtils";
 
 const Drafts = () => {
-  const [drafts, setDrafts] = useState([
-    {
-      title: "Full Stack Developer Outreach",
-      subject: "Partnership Opportunity",
-      body: "Hi, I would like to connect with your team about a potential partnership.",
-      attachments: [],
-    },
-    {
-      title: "React Developer Opportunity",
-      subject: "Quick question about your product",
-      body: "We've been evaluating solutions in this space and yours stood out.",
-      attachments: [],
-    },
-  ]);
+  const [drafts, setDrafts] = useState([]);
 
   const [modal, setModal] = useState(false);
   const [modalMode, setModalMode] = useState("create");
@@ -25,6 +19,10 @@ const Drafts = () => {
   const [body, setBody] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [title, setTitle] = useState("");
+  const [existingAttachments, setExistingAttachments] = useState([]);
+  const [newFiles, setNewFiles] = useState([]);
+
+  const { accounts } = useContext(userContext);
 
   const reset = () => {
     setTitle("");
@@ -45,22 +43,84 @@ const Drafts = () => {
     setSubject(row.subject);
     setBody(row.body);
     setAttachments(row.attachments || []);
-    setEditIdx(i);
+    setExistingAttachments(row.attachments || []);
+    setNewFiles([]);
+    setEditIdx(row.id);
     setModalMode("view");
     setModal(true);
   };
 
-  const save = () => {
+  const save = async () => {
     if (!subject.trim() && !body.trim()) return;
 
-    const d = { title, subject, body, attachments };
+    try {
+      const formData = new FormData();
+      const htmlBody = convertToHtml(body);
 
-    if (modalMode === "edit" && editIdx !== null)
-      setDrafts(drafts.map((x, i) => (i === editIdx ? d : x)));
-    else setDrafts([...drafts, d]);
+      formData.append("title", title);
+      formData.append("subject", subject);
+      formData.append("body", htmlBody);
+      formData.append("gmailAccountId", accounts[0].gmailAccountId);
+      formData.append("userId", accounts[0].id);
 
-    close();
+      formData.append(
+        "existingAttachments",
+        JSON.stringify(existingAttachments.map((a) => ({ _id: a._id }))),
+      );
+
+      newFiles.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      if (modalMode === "edit") {
+        await updateDraftApi(editIdx, formData);
+      } else {
+        await createDraftApi(formData);
+      }
+
+      await fetchDrafts();
+      close();
+    } catch (err) {
+      console.error("Draft save error:", err);
+    }
   };
+
+  const fetchDrafts = async () => {
+    try {
+      const res = await getDraftsApi({
+        userId: accounts[0].id,
+        gmailAccountId: accounts[0].gmailAccountId,
+      });
+
+      const formatted = res.data.map((d) => ({
+        id: d.id,
+        title: d.title,
+        subject: d.subject,
+        body: d.htmlBody,
+        attachments: d.attachments || [],
+      }));
+
+      setDrafts(formatted);
+    } catch (err) {
+      console.error("Fetch drafts error:", err);
+    }
+  };
+
+  const handleAttachmentsChange = (files) => {
+    setNewFiles(files);
+  };
+
+  const handleRemoveAttachment = (id) => {
+    const updated = existingAttachments.filter((a) => a._id !== id);
+    setExistingAttachments(updated);
+    setAttachments(updated);
+  };
+
+  useEffect(() => {
+    if (accounts?.length) {
+      fetchDrafts();
+    }
+  }, [accounts]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -127,9 +187,10 @@ const Drafts = () => {
 
                   {/* Body */}
                   <td className="px-[18px] py-[14px] text-slate-500 max-w-[280px]">
-                    <span className="block truncate max-w-[260px]">
-                      {row.body}
-                    </span>
+                    <span
+                      className="block truncate max-w-[260px]"
+                      dangerouslySetInnerHTML={{ __html: row.body }}
+                    />
                   </td>
 
                   {/* Attachments */}
@@ -162,7 +223,7 @@ const Drafts = () => {
           setTitle={setTitle}
           setSubject={setSubject}
           setBody={setBody}
-          setAttachments={setAttachments}
+          setAttachments={handleAttachmentsChange}
           close={close}
           save={save}
           setModalMode={setModalMode}

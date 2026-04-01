@@ -33,7 +33,7 @@ axiosclient.interceptors.response.use(
       toast.error("Session expired. Please log in again.");
       localStorage.clear();
       window.location.href = "/";
-      window.reload();
+      window.location.reload();
       return Promise.reject(error);
     } else {
       //   console.error(error?.response?.data?.message, "errererererer");

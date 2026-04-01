@@ -18,6 +18,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { userContext } from "../../../context/ContextProvider";
 import { sendEmail } from "../../../utils/api.utils";
 import { toast } from "react-toastify";
+import { convertToHtml } from "../../../utils/fileUtils";
 
 const EmailFormCard = ({
   setSubject,
@@ -130,14 +131,14 @@ const EmailFormCard = ({
       .replace(/>/g, "&gt;");
   };
 
-  const convertToHTML = (text) => {
-    return text
-      .split("\n")
-      .map((line) =>
-        line.trim() === "" ? "<br/>" : `<p>${escapeHTML(line)}</p>`,
-      )
-      .join("");
-  };
+  // const convertToHTML = (text) => {
+  //   return text
+  //     .split("\n")
+  //     .map((line) =>
+  //       line.trim() === "" ? "<br/>" : `<p>${escapeHTML(line)}</p>`,
+  //     )
+  //     .join("");
+  // };
 
   const handleSend = async () => {
     try {
@@ -150,19 +151,19 @@ const EmailFormCard = ({
 
       setSending(true);
 
-      const htmlBody = convertToHTML(body);
-      const newMails = targets.map((t) => ({
-        gmailAccountId: accounts?.[0]?.gmailAccountId,
-        to: t
-          .split("@")[0]
-          .replace(/[._]/g, " ")
-          .replace(/\b\w/g, (c) => c.toUpperCase()),
-        cc: ccRecipients,
-        bcc: bccRecipients,
-        subject,
-        body: htmlBody,
-        userId: accounts?.[0]?.id,
-      }));
+      const htmlBody = convertToHtml(body);
+      // const newMails = targets.map((t) => ({
+      //   gmailAccountId: accounts?.[0]?.gmailAccountId,
+      //   to: t
+      //     .split("@")[0]
+      //     .replace(/[._]/g, " ")
+      //     .replace(/\b\w/g, (c) => c.toUpperCase()),
+      //   cc: ccRecipients,
+      //   bcc: bccRecipients,
+      //   subject,
+      //   body: htmlBody,
+      //   userId: accounts?.[0]?.id,
+      // }));
 
       const formData = new FormData();
 

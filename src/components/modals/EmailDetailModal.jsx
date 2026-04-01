@@ -1,5 +1,8 @@
 import { FiX } from "react-icons/fi";
 import { BsPaperclip } from "react-icons/bs";
+import { downloadAttachment } from "../../utils/api.utils";
+import { useContext } from "react";
+import { userContext } from "../../context/ContextProvider";
 
 const statusColors = {
   Replied: "bg-green-100 text-green-700",
@@ -13,6 +16,8 @@ const EmailDetailModal = ({ viewMail, setViewMail }) => {
   if (!viewMail) return null;
 
   const hue = (viewMail.name.charCodeAt(0) * 17) % 360;
+
+  const {accounts} = useContext(userContext)
 
   return (
     <div
@@ -119,7 +124,7 @@ const EmailDetailModal = ({ viewMail, setViewMail }) => {
                         <div className="w-8 h-8 rounded-[8px] bg-indigo-50 text-indigo-500 flex items-center justify-center text-[11px] font-bold">
                           <BsPaperclip />
                         </div>
-
+                    
                         <div className="flex flex-col min-w-0">
                           <p className="text-[12.5px] font-semibold text-slate-800 truncate">
                             {file.filename}
@@ -134,8 +139,12 @@ const EmailDetailModal = ({ viewMail, setViewMail }) => {
                       <button
                         className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-600"
                         onClick={() => {
-                          // future download logic
-                          console.log("Download:", file);
+                          downloadAttachment({
+                            messageId: viewMail.messageId,
+                            filename: file.filename,
+                            gmailAccountId: accounts[0].gmailAccountId,
+                            userId: accounts[0].id,
+                          });
                         }}
                       >
                         Download
