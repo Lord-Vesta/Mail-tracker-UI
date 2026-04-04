@@ -21,30 +21,13 @@ import { sendEmail } from "../../utils/api.utils";
 import { toast } from "react-toastify";
 
 const DAY_MS = 86400000;
-
-// Max file size: 25MB (Gmail standard limit for most attachments)
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = [
-  "pdf",
-  "doc",
-  "docx",
-  "xls",
-  "xlsx",
-  "ppt",
-  "pptx",
-  "txt",
-  "csv",
-  "zip",
-  "jpg",
-  "jpeg",
-  "png",
-  "gif",
+  "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+  "txt", "csv", "zip", "jpg", "jpeg", "png", "gif",
 ];
 
-/**
- * Format bytes to human readable format
- */
 const formatFileSize = (bytes) => {
   if (bytes === 0) return "0 Bytes";
   const k = 1024;
@@ -53,51 +36,21 @@ const formatFileSize = (bytes) => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
-/**
- * Get file extension
- */
-const getFileExtension = (filename) => {
-  return filename.split(".").pop().toLowerCase();
-};
+const getFileExtension = (filename) => filename.split(".").pop().toLowerCase();
 
-/**
- * Check if file type is allowed
- */
-const isFileTypeAllowed = (filename) => {
-  const ext = getFileExtension(filename);
-  return ALLOWED_EXTENSIONS.includes(ext);
-};
+const isFileTypeAllowed = (filename) =>
+  ALLOWED_EXTENSIONS.includes(getFileExtension(filename));
 
-/**
- * Get file icon based on type
- */
 const getFileIcon = (filename) => {
   const ext = getFileExtension(filename);
-  const iconClass = "w-4 h-4";
-
   const iconMap = {
-    pdf: "text-red-500",
-    doc: "text-blue-500",
-    docx: "text-blue-500",
-    xls: "text-green-500",
-    xlsx: "text-green-500",
-    ppt: "text-orange-500",
-    pptx: "text-orange-500",
-    txt: "text-gray-500",
-    csv: "text-green-600",
-    zip: "text-purple-500",
-    jpg: "text-indigo-500",
-    jpeg: "text-indigo-500",
-    png: "text-indigo-500",
-    gif: "text-indigo-500",
+    pdf: "text-red-500", doc: "text-blue-500", docx: "text-blue-500",
+    xls: "text-green-500", xlsx: "text-green-500", ppt: "text-orange-500",
+    pptx: "text-orange-500", txt: "text-gray-500", csv: "text-green-600",
+    zip: "text-purple-500", jpg: "text-indigo-500", jpeg: "text-indigo-500",
+    png: "text-indigo-500", gif: "text-indigo-500",
   };
-
-  return (
-    <FiFile
-      className={`${iconClass} ${iconMap[ext] || "text-gray-400"}`}
-      size={14}
-    />
-  );
+  return <FiFile className={`w-4 h-4 ${iconMap[ext] || "text-gray-400"}`} size={14} />;
 };
 
 const FollowupModal = ({ lead, onClose }) => {
@@ -109,58 +62,49 @@ const FollowupModal = ({ lead, onClose }) => {
   );
   const hue = (name.charCodeAt(0) * 17) % 360;
 
-  const [subject, setSubject] = useState(``);
-  const [message, setMessage] = useState(``);
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [dragActive, setDragActive] = useState(false);
   const [showDraftPicker, setShowDraftPicker] = useState(false);
   const [sending, setSending] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
   const [attachmentError, setAttachmentError] = useState("");
+  const [draftId, setDraftId] = useState(null);
+
   const { accounts } = useContext(userContext);
 
-  /**
-   * Calculate total attachment size
-   */
-  const totalAttachmentSize = attachments.reduce(
-    (sum, file) => sum + file.size,
-    0,
-  );
+  const totalAttachmentSize = attachments.reduce((sum, file) => sum + (file.size || 0), 0);
 
-  /**
-   * Validate and add files
-   */
+  const addDraftFiles = (files) => {
+    const nf = files.map((f) => ({
+      type: "stored",
+      id: f._id,
+      name: f.filename,
+      size: f.size,
+      mimeType: f.mimeType,
+    }));
+    setAttachments((p) => [...p, ...nf]);
+  };
+
   const validateAndAddFiles = (files) => {
     setAttachmentError("");
-    const newFiles = Array.from(files);
-    const validFiles = [];
     const errors = [];
+    const validFiles = [];
 
-    newFiles.forEach((file) => {
-      // Check file size
+    Array.from(files).forEach((file) => {
       if (file.size > MAX_FILE_SIZE) {
-        errors.push(
-          `${file.name} exceeds max file size (${formatFileSize(MAX_FILE_SIZE)})`,
-        );
+        errors.push(`${file.name} exceeds max file size (${formatFileSize(MAX_FILE_SIZE)})`);
         return;
       }
-
-      // Check file type
       if (!isFileTypeAllowed(file.name)) {
-        errors.push(
-          `${file.name} type not allowed. Allowed: ${ALLOWED_EXTENSIONS.join(
-            ", ",
-          )}`,
-        );
+        errors.push(`${file.name} type not allowed`);
         return;
       }
-
-      // Check if already added
-      if (attachments.some((a) => a.file.name === file.name)) {
+      if (attachments.some((a) => a.name === file.name)) {
         errors.push(`${file.name} is already attached`);
         return;
       }
-
       validFiles.push({
         id: Math.random().toString(36).substr(2, 9),
         file,
@@ -169,79 +113,38 @@ const FollowupModal = ({ lead, onClose }) => {
       });
     });
 
-    // Check total size
     if (
       totalAttachmentSize + validFiles.reduce((s, f) => s + f.size, 0) >
       MAX_TOTAL_SIZE
     ) {
-      errors.push(
-        `Total attachment size exceeds limit (${formatFileSize(MAX_TOTAL_SIZE)})`,
-      );
+      errors.push(`Total attachment size exceeds limit (${formatFileSize(MAX_TOTAL_SIZE)})`);
       return;
     }
 
-    if (errors.length > 0) {
-      setAttachmentError(errors[0]);
-    }
-
-    if (validFiles.length > 0) {
-      setAttachments([...attachments, ...validFiles]);
-    }
+    if (errors.length) setAttachmentError(errors[0]);
+    if (validFiles.length) setAttachments((a) => [...a, ...validFiles]);
   };
 
-  /**
-   * Handle file input change
-   */
-  const handleFileChange = (e) => {
-    validateAndAddFiles(e.target.files);
-  };
+  const handleFileChange = (e) => validateAndAddFiles(e.target.files);
 
-  /**
-   * Handle drag over
-   */
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(true);
-  };
-
-  /**
-   * Handle drag leave
-   */
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-  };
-
-  /**
-   * Handle drop
-   */
+  const handleDragOver = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); e.stopPropagation(); setDragActive(false); };
   const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     setDragActive(false);
     validateAndAddFiles(e.dataTransfer.files);
   };
 
-  /**
-   * Remove attachment
-   */
   const removeAttachment = (id) => {
     setAttachments(attachments.filter((a) => a.id !== id));
     setAttachmentError("");
   };
 
-  /**
-   * Send follow-up with attachments
-   */
   const sendFollowUp = async () => {
-    setSending(true);
     if (!subject.trim() || !message.trim()) return;
+    setSending(true);
     try {
       const html = convertToHtml(message);
-
-      // Prepare form data for multipart/form-data upload
       const formData = new FormData();
 
       formData.append("gmailAccountId", accounts?.[0]?.gmailAccountId);
@@ -251,23 +154,26 @@ const FollowupModal = ({ lead, onClose }) => {
       formData.append("to", JSON.stringify(lead.to));
       formData.append("cc", JSON.stringify(lead.cc || []));
       formData.append("bcc", JSON.stringify(lead.bcc || []));
-      formData.append("attachmentIds", JSON.stringify(lead.attachments || []));
 
-      const newFiles = attachments?.filter((a) => a instanceof File);
+      if (draftId) formData.append("draftId", draftId);
 
-      newFiles?.forEach((file) => {
-        formData.append("files", file);
-      });
+      const attachmentIds = attachments
+        .filter((a) => a.type === "stored" && a.id)
+        .map((a) => a.id);
+      formData.append("attachmentIds", JSON.stringify(attachmentIds));
+
+      const newFiles = attachments
+        .filter((a) => a.file instanceof File)
+        .map((a) => a.file);
+      newFiles.forEach((file) => formData.append("files", file));
 
       await sendEmail(formData);
       setSentSuccess(true);
+      setTimeout(() => onClose(), 1500);
     } catch (error) {
       toast.error("Failed to send follow-up: " + error);
-      setSending(false);
-      return;
     } finally {
       setSending(false);
-      onClose();
     }
   };
 
@@ -288,20 +194,14 @@ const FollowupModal = ({ lead, onClose }) => {
           <div className="flex items-center gap-3">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
-              style={{
-                background: `hsl(${hue},55%,88%)`,
-                color: `hsl(${hue},45%,35%)`,
-              }}
+              style={{ background: `hsl(${hue},55%,88%)`, color: `hsl(${hue},45%,35%)` }}
             >
               {name[0]}
             </div>
-
             <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Follow-up to {name}
-              </h2>
+              <h2 className="text-sm font-bold text-slate-900">Follow-up to {name}</h2>
               <p className="text-xs text-slate-400">
-                {lead.email} · {daysSince} days since original
+                {lead.to[0]} · {daysSince} days since original
               </p>
             </div>
           </div>
@@ -309,20 +209,16 @@ const FollowupModal = ({ lead, onClose }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowDraftPicker(!showDraftPicker)}
-              className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md border transition
-              ${
-                showDraftPicker
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : "bg-indigo-50 text-indigo-600 border-indigo-200"
+              disabled={sending}
+              className={`flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-md border transition disabled:opacity-50 disabled:cursor-not-allowed
+              ${showDraftPicker
+                ? "bg-indigo-600 text-white border-indigo-600"
+                : "bg-indigo-50 text-indigo-600 border-indigo-200"
               }`}
             >
               <FiEdit3 size={12} />
               Draft
-              {showDraftPicker ? (
-                <FiChevronUp size={12} />
-              ) : (
-                <FiChevronDown size={12} />
-              )}
+              {showDraftPicker ? <FiChevronUp size={12} /> : <FiChevronDown size={12} />}
             </button>
 
             <button
@@ -334,25 +230,29 @@ const FollowupModal = ({ lead, onClose }) => {
           </div>
         </div>
 
-        {showDraftPicker && (
-          <DraftPicker
-            setSubject={setSubject}
-            setBody={setMessage}
-            setShowDraftPicker={setShowDraftPicker}
-          />
-        )}
-
         {/* CONTEXT */}
         <div className="px-6 py-2 bg-amber-50 border-b border-amber-200 flex items-center gap-2">
           <FiAlertCircle size={13} className="text-amber-700" />
           <p className="text-xs text-amber-900">
-            Original: <strong>{lead.subject}</strong> · sent {daysSince} days
-            ago · {lead.opens} open{lead.opens !== 1 ? "s" : ""}
+            Original: <strong>{lead.subject}</strong> · sent {daysSince} days ago · {lead.opens} open{lead.opens !== 1 ? "s" : ""}
           </p>
         </div>
 
-        {/* FORM */}
+        {/* FORM — DraftPicker lives inside scroll container */}
         <div className="px-6 py-5 flex flex-col gap-4 max-h-[600px] overflow-y-auto">
+
+          {/* DRAFT PICKER — inside scroll so it doesn't push outside screen */}
+          {showDraftPicker && (
+            <DraftPicker
+              setSubject={setSubject}
+              setBody={setMessage}
+              setShowDraftPicker={setShowDraftPicker}
+              addFiles={addDraftFiles}
+              setDraftId={setDraftId}
+            />
+          )}
+
+          {/* Subject */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
               Subject
@@ -360,11 +260,13 @@ const FollowupModal = ({ lead, onClose }) => {
             <input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className={fld}
+              disabled={sending}
+              className={`${fld} disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50`}
               placeholder="Enter subject"
             />
           </div>
 
+          {/* Message */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
               Message
@@ -373,29 +275,35 @@ const FollowupModal = ({ lead, onClose }) => {
               rows={7}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className={`${fld} resize-none leading-relaxed`}
+              disabled={sending}
+              className={`${fld} resize-none leading-relaxed disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50`}
               placeholder="Enter your message"
             />
-            <p className="text-right text-xs text-slate-300 mt-1">
-              {message.length} chars
-            </p>
+            <p className="text-right text-xs text-slate-300 mt-1">{message.length} chars</p>
           </div>
 
-          {/* ATTACHMENTS SECTION */}
+          {/* ATTACHMENTS */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-2">
               Attachments ({attachments.length})
+              {attachments.some((a) => a.type === "stored") && (
+                <span className="ml-2 text-[10px] bg-indigo-50 text-indigo-500 px-[6px] py-[1px] rounded-full font-semibold normal-case tracking-normal">
+                  includes draft files
+                </span>
+              )}
             </label>
 
-            {/* Drag and drop zone */}
+            {/* Drop zone */}
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-lg p-4 text-center transition cursor-pointer ${
+              className={`border-2 border-dashed rounded-lg p-4 text-center transition ${
                 dragActive
-                  ? "border-indigo-500 bg-indigo-50"
-                  : "border-slate-300 bg-slate-50 hover:bg-slate-100"
+                  ? "border-indigo-500 bg-indigo-50 cursor-copy"
+                  : sending
+                  ? "border-slate-200 bg-slate-50 opacity-50 cursor-not-allowed"
+                  : "border-slate-300 bg-slate-50 hover:bg-slate-100 cursor-pointer"
               }`}
             >
               <input
@@ -403,12 +311,11 @@ const FollowupModal = ({ lead, onClose }) => {
                 multiple
                 onChange={handleFileChange}
                 className="hidden"
-                id="file-input"
+                id="followup-file-input"
                 disabled={sending || sentSuccess}
               />
-
               <label
-                htmlFor="file-input"
+                htmlFor="followup-file-input"
                 className="flex flex-col items-center gap-2 cursor-pointer"
               >
                 <FiPaperclip
@@ -420,31 +327,31 @@ const FollowupModal = ({ lead, onClose }) => {
                     Drop files here or click to browse
                   </p>
                   <p className="text-[11px] text-slate-500 mt-1">
-                    Max {formatFileSize(MAX_FILE_SIZE)} per file · Total{" "}
-                    {formatFileSize(MAX_TOTAL_SIZE)}
+                    Max {formatFileSize(MAX_FILE_SIZE)} per file · Total {formatFileSize(MAX_TOTAL_SIZE)}
                   </p>
                 </div>
               </label>
             </div>
 
-            {/* Error message */}
+            {/* Error */}
             {attachmentError && (
               <div className="mt-2 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <FiAlertTriangle
-                  size={14}
-                  className="text-red-500 mt-0.5 flex-shrink-0"
-                />
+                <FiAlertTriangle size={14} className="text-red-500 mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-red-700">{attachmentError}</p>
               </div>
             )}
 
-            {/* Attachments list */}
+            {/* File list */}
             {attachments.length > 0 && (
               <div className="mt-3 space-y-2">
                 {attachments.map((attachment) => (
                   <div
                     key={attachment.id}
-                    className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition"
+                    className={`flex items-center justify-between p-3 border rounded-lg transition ${
+                      attachment.type === "stored"
+                        ? "bg-indigo-50 border-indigo-200"
+                        : "bg-slate-50 border-slate-200 hover:bg-slate-100"
+                    }`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
                       {getFileIcon(attachment.name)}
@@ -453,33 +360,27 @@ const FollowupModal = ({ lead, onClose }) => {
                           {attachment.name}
                         </p>
                         <p className="text-[11px] text-slate-500">
-                          {formatFileSize(attachment.size)}
+                          {attachment.type === "stored"
+                            ? "From draft"
+                            : formatFileSize(attachment.size)}
                         </p>
                       </div>
                     </div>
-
                     <button
                       onClick={() => removeAttachment(attachment.id)}
-                      className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition flex-shrink-0"
-                      title="Remove attachment"
+                      disabled={sending}
+                      className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition flex-shrink-0 disabled:pointer-events-none"
                     >
                       <FiTrash2 size={14} />
                     </button>
                   </div>
                 ))}
 
-                {/* Total size indicator */}
+                {/* Total size */}
                 <div className="flex items-center justify-between text-[11px] text-slate-600 px-3 py-2 border border-slate-200 rounded-lg">
                   <span>Total size:</span>
-                  <span
-                    className={`font-semibold ${
-                      totalAttachmentSize > MAX_TOTAL_SIZE * 0.8
-                        ? "text-amber-600"
-                        : "text-slate-600"
-                    }`}
-                  >
-                    {formatFileSize(totalAttachmentSize)} /{" "}
-                    {formatFileSize(MAX_TOTAL_SIZE)}
+                  <span className={`font-semibold ${totalAttachmentSize > MAX_TOTAL_SIZE * 0.8 ? "text-amber-600" : "text-slate-600"}`}>
+                    {formatFileSize(totalAttachmentSize)} / {formatFileSize(MAX_TOTAL_SIZE)}
                   </span>
                 </div>
               </div>
@@ -500,19 +401,11 @@ const FollowupModal = ({ lead, onClose }) => {
           ) : (
             <button
               onClick={sendFollowUp}
-              disabled={
-                !subject.trim() ||
-                !message.trim() ||
-                sending ||
-                totalAttachmentSize > MAX_TOTAL_SIZE
-              }
+              disabled={!subject.trim() || !message.trim() || sending || totalAttachmentSize > MAX_TOTAL_SIZE}
               className="px-4 py-2 text-sm font-bold rounded-md bg-indigo-600 text-white flex items-center gap-1 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
             >
               {sending ? (
-                <>
-                  <FiRefreshCw className="animate-spin" size={13} />
-                  Sending...
-                </>
+                <><FiRefreshCw className="animate-spin" size={13} /> Sending...</>
               ) : (
                 <>
                   <FiSend size={13} />
