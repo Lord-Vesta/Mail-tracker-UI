@@ -27,8 +27,6 @@ const EmailFormCard = ({
   allTo,
   subject,
   body,
-  setSentList,
-  // handleSend,
 }) => {
   const [showCCBcc, setShowCCBcc] = useState(false);
   const [showDraftPicker, setShowDraftPicker] = useState(false);
@@ -51,7 +49,6 @@ const EmailFormCard = ({
     return /(https?:\/\/|<a\s+href=)/i.test(text);
   };
 
-  // receipeient handlers
   const addRecipient = (val) => {
     const v = val.trim().replace(/,$/, "");
     if (v && !recipients.includes(v)) {
@@ -71,8 +68,6 @@ const EmailFormCard = ({
   const removeRecipient = (r) =>
     setRecipients((rs) => rs.filter((x) => x !== r));
 
-  // cc receipeient handlers
-
   const addCCRecipient = (val) => {
     const v = val.trim().replace(/,$/, "");
     if (v && !ccRecipients.includes(v)) {
@@ -90,8 +85,6 @@ const EmailFormCard = ({
 
   const removeCCRecipient = (r) =>
     setCCRecipients((rs) => rs.filter((x) => x !== r));
-
-  // bcc receipeient handlers
 
   const addBCCRecipient = (val) => {
     const v = val.trim().replace(/,$/, "");
@@ -111,34 +104,12 @@ const EmailFormCard = ({
   const removeBCCRecipient = (r) =>
     setBCCRecipients((rs) => rs.filter((x) => x !== r));
 
-  // setAllTo([
-  //   ...recipients,
-  //   ...(recipientInput.trim() ? [recipientInput.trim()] : []),
-  // ]);
-
   const addFiles = (files) => {
     const nf = Array.from(files).filter(
       (f) => !attachments.find((a) => a.name === f.name && a.size === f.size),
     );
-
     setAttachments((p) => [...p, ...nf]);
   };
-
-  const escapeHTML = (str) => {
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
-  };
-
-  // const convertToHTML = (text) => {
-  //   return text
-  //     .split("\n")
-  //     .map((line) =>
-  //       line.trim() === "" ? "<br/>" : `<p>${escapeHTML(line)}</p>`,
-  //     )
-  //     .join("");
-  // };
 
   const handleSend = async () => {
     try {
@@ -152,36 +123,20 @@ const EmailFormCard = ({
       setSending(true);
 
       const htmlBody = convertToHtml(body);
-      // const newMails = targets.map((t) => ({
-      //   gmailAccountId: accounts?.[0]?.gmailAccountId,
-      //   to: t
-      //     .split("@")[0]
-      //     .replace(/[._]/g, " ")
-      //     .replace(/\b\w/g, (c) => c.toUpperCase()),
-      //   cc: ccRecipients,
-      //   bcc: bccRecipients,
-      //   subject,
-      //   body: htmlBody,
-      //   userId: accounts?.[0]?.id,
-      // }));
 
       const formData = new FormData();
-
       formData.append("gmailAccountId", accounts?.[0]?.gmailAccountId);
       formData.append("userId", accounts?.[0]?.id);
       formData.append("subject", subject);
       formData.append("body", htmlBody);
-
       formData.append("to", JSON.stringify(targets));
       formData.append("cc", JSON.stringify(ccRecipients));
       formData.append("bcc", JSON.stringify(bccRecipients));
 
       const attachmentIds = attachments?.filter((a) => a.id).map((a) => a.id);
-
       formData.append("attachmentIds", JSON.stringify(attachmentIds || []));
 
       const newFiles = attachments?.filter((a) => a instanceof File);
-
       newFiles?.forEach((file) => {
         formData.append("files", file);
       });
@@ -225,17 +180,16 @@ const EmailFormCard = ({
           <div className="w-8 h-8 rounded-[9px] bg-indigo-50 text-indigo-500 flex items-center justify-center">
             <FiEdit3 size={15} />
           </div>
-
           <div>
             <h2 className="text-[14px] font-bold text-slate-900">New Email</h2>
-
             <p className="text-[11.5px] text-slate-400">Single or mass send</p>
           </div>
         </div>
 
         <button
           onClick={() => setShowDraftPicker((v) => !v)}
-          className={`flex items-center gap-[6px] px-[12px] py-[6px] rounded-[9px] text-[12px] font-semibold border transition
+          disabled={sending}
+          className={`flex items-center gap-[6px] px-[12px] py-[6px] rounded-[9px] text-[12px] font-semibold border transition disabled:opacity-50 disabled:cursor-not-allowed
           ${
             showDraftPicker
               ? "bg-indigo-500 border-indigo-500 text-white"
@@ -263,6 +217,7 @@ const EmailFormCard = ({
       <div className="px-[22px] py-[20px] flex flex-col gap-[14px]">
         <RecipientInput
           label="To"
+          disabled={sending}
           recipients={recipients}
           removeRecipient={removeRecipient}
           recipientInput={recipientInput}
@@ -273,7 +228,8 @@ const EmailFormCard = ({
 
         <button
           onClick={() => setShowCCBcc(!showCCBcc)}
-          className="flex items-center gap-[6px] text-[12px] font-semibold text-indigo-500 hover:text-indigo-600 transition py-[4px]"
+          disabled={sending}
+          className="flex items-center gap-[6px] text-[12px] font-semibold text-indigo-500 hover:text-indigo-600 transition py-[4px] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <FiLink2 size={12} />
           {showCCBcc ? "Hide" : "Add"} CC/BCC
@@ -282,10 +238,10 @@ const EmailFormCard = ({
 
         {showCCBcc && (
           <div className="flex flex-col gap-[12px] pt-[4px] pb-[8px] border-l-2 border-indigo-200 pl-[14px]">
-            {/* CC Recipients */}
             <RecipientInput
               label="CC"
               variant="secondary"
+              disabled={sending}
               recipients={ccRecipients}
               removeRecipient={removeCCRecipient}
               recipientInput={ccRecipientInput}
@@ -293,11 +249,10 @@ const EmailFormCard = ({
               handleRecipientKey={handleCCRecipientKey}
               addRecipient={addCCRecipient}
             />
-
-            {/* BCC Recipients */}
             <RecipientInput
               label="BCC"
               variant="secondary"
+              disabled={sending}
               recipients={bccRecipients}
               removeRecipient={removeBCCRecipient}
               recipientInput={bccRecipientInput}
@@ -314,12 +269,12 @@ const EmailFormCard = ({
             <FiType size={11} />
             Subject
           </label>
-
           <input
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="e.g. Quick question about your product"
-            className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] text-slate-700 bg-white outline-none transition focus:border-indigo-500"
+            disabled={sending}
+            className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] text-slate-700 bg-white outline-none transition focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
           />
         </div>
 
@@ -329,13 +284,13 @@ const EmailFormCard = ({
             <FiAlignLeft size={11} />
             Message
           </label>
-
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={8}
             placeholder="Write your email here…"
-            className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] resize-none leading-[1.65] text-slate-700 bg-white outline-none transition focus:border-indigo-500"
+            disabled={sending}
+            className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] resize-none leading-[1.65] text-slate-700 bg-white outline-none transition focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
           />
           {!containsLinks && body.trim() && (
             <div className="flex items-start gap-[6px] text-[11px] text-amber-600 bg-amber-50 border border-amber-200 rounded-[8px] px-[10px] py-[8px]">
@@ -346,7 +301,6 @@ const EmailFormCard = ({
               </span>
             </div>
           )}
-
           <p className="text-right text-[11px] text-slate-300">
             {body.length} chars
           </p>
@@ -357,6 +311,7 @@ const EmailFormCard = ({
           attachments={attachments}
           setAttachments={setAttachments}
           addFiles={addFiles}
+          disabled={sending}
         />
 
         {/* Footer */}

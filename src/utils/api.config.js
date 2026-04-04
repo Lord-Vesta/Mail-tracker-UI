@@ -13,4 +13,5 @@ export const apiConfig = {
   UPDATE_DRAFT: "/api/draft/:id",
   GET_FOLLOWUPS: "/api/followup/list",
   CHECK_REPLIES: "/api/followup/check-replies",
+  DELETE_DRAFT: "/api/draft/:id",
 };

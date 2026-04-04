@@ -1,5 +1,4 @@
 import { useContext, useEffect, useState } from "react";
-import FollowupModal from "../components/modals/FollowupModal";
 import FollowUpQueueCard from "../components/followups/FollowUpQueueCard";
 import FollowUpQueue from "../components/followups/FollowUpQueue";
 import { userContext } from "../context/ContextProvider";
@@ -7,9 +6,9 @@ import { getFollowUpsApi } from "../utils/api.utils";
 
 const FOLLOWUP_THRESHOLD_DAYS = 7;
 
-
 const Followups = () => {
   const [queue, setQueue] = useState([]);
+  const [isLoadingQueue, setIsLoadingQueue] = useState(false); 
   const { accounts } = useContext(userContext);
 
   const counts = {
@@ -20,15 +19,17 @@ const Followups = () => {
   };
 
   const handlegetFollowUpsApi = async () => {
+    setIsLoadingQueue(true);
     try {
       const data = await getFollowUpsApi(
         accounts[0]?.id,
         accounts[0]?.gmailAccountId,
       );
-      console.log("Follow-ups:", data);
       setQueue(data?.data?.data);
     } catch (error) {
       console.error("Error fetching follow-ups:", error);
+    } finally {
+      setIsLoadingQueue(false); 
     }
   };
 
@@ -45,7 +46,13 @@ const Followups = () => {
         FOLLOWUP_THRESHOLD_DAYS={FOLLOWUP_THRESHOLD_DAYS}
       />
 
-      <FollowUpQueue queue={queue} counts={counts} setQueue={setQueue} handlegetFollowUpsApi={handlegetFollowUpsApi}/>
+      <FollowUpQueue
+        queue={queue}
+        counts={counts}
+        setQueue={setQueue}
+        handlegetFollowUpsApi={handlegetFollowUpsApi}
+        isLoadingQueue={isLoadingQueue} 
+      />
     </div>
   );
 };

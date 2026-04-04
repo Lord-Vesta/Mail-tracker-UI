@@ -8,7 +8,8 @@ const RecipientInput = ({
   setRecipientInput,
   handleRecipientKey,
   addRecipient,
-  variant = "primary", // optional styling control
+  variant = "primary",
+  disabled = false,
 }) => {
   const isPrimary = variant === "primary";
 
@@ -19,7 +20,6 @@ const RecipientInput = ({
         <label className="flex items-center gap-[5px] text-[11px] font-bold text-slate-400 uppercase tracking-[0.05em]">
           <FiUsers size={11} />
           {label}
-
           {recipients.length > 1 && (
             <span
               className={`ml-[4px] text-[10px] font-medium px-[7px] py-[1px] rounded-full ${
@@ -36,8 +36,14 @@ const RecipientInput = ({
 
       {/* Input Container */}
       <div
-        onClick={(e) => e.currentTarget.querySelector("input")?.focus()}
-        className="min-h-[44px] border border-slate-200 rounded-[10px] px-[10px] py-[6px] flex flex-wrap gap-[5px] items-center bg-white cursor-text transition-colors"
+        onClick={(e) =>
+          !disabled && e.currentTarget.querySelector("input")?.focus()
+        }
+        className={`min-h-[44px] border border-slate-200 rounded-[10px] px-[10px] py-[6px] flex flex-wrap gap-[5px] items-center bg-white transition-colors ${
+          disabled
+            ? "opacity-50 cursor-not-allowed bg-slate-50"
+            : "cursor-text"
+        }`}
       >
         {recipients.map((r, i) => (
           <span
@@ -49,10 +55,10 @@ const RecipientInput = ({
             }`}
           >
             {r}
-
             <button
-              onClick={() => removeRecipient(r)}
-              className="text-slate-400 hover:text-slate-600 flex"
+              onClick={() => !disabled && removeRecipient(r)}
+              disabled={disabled}
+              className="text-slate-400 hover:text-slate-600 flex disabled:pointer-events-none"
             >
               <FiX size={10} />
             </button>
@@ -64,14 +70,15 @@ const RecipientInput = ({
           onChange={(e) => setRecipientInput(e.target.value)}
           onKeyDown={handleRecipientKey}
           onBlur={() => {
-            if (recipientInput.trim()) addRecipient(recipientInput);
+            if (!disabled && recipientInput.trim()) addRecipient(recipientInput);
           }}
+          disabled={disabled}
           placeholder={
             recipients.length === 0
               ? `${label.toLowerCase()}@example.com — press Enter`
-              : "Add another email…"
+              : "Add another email..."
           }
-          className="border-none outline-none text-[12.5px] text-slate-700 bg-transparent flex-grow min-w-[200px]"
+          className="border-none outline-none text-[12.5px] text-slate-700 bg-transparent flex-grow min-w-[200px] disabled:cursor-not-allowed"
         />
       </div>
 

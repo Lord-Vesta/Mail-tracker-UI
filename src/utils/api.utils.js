@@ -12,6 +12,7 @@ const {
   UPDATE_DRAFT,
   GET_FOLLOWUPS,
   CHECK_REPLIES,
+  DELETE_DRAFT
 } = apiConfig;
 
 export const signupUser = async (userData) => {
@@ -181,5 +182,16 @@ export const checkRepliesApi = async (body) => {
     return response.data;
   } catch (error) {
     throw error?.response?.data?.message || "Failed to check replies";
+  }
+};
+
+export const deleteDraftApi = async (draftId) => {
+  try {
+    const response = await axiosclient.delete(DELETE_DRAFT,{
+      params: { id: draftId },
+    });
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to delete draft";
   }
 };

@@ -1,4 +1,4 @@
-import { FiX, FiEdit } from "react-icons/fi";
+import { FiX, FiEdit, FiRefreshCw } from "react-icons/fi";
 import AttachmentZone from "./AttachmentZone";
 import AttachmentList from "./AttachmentList";
 
@@ -15,6 +15,7 @@ const DraftModal = ({
   close,
   save,
   setModalMode,
+  isSaving = false, // ← added
 }) => {
   const isView = modalMode === "view";
   const isEdit = modalMode === "edit";
@@ -40,17 +41,23 @@ const DraftModal = ({
                 Read only
               </span>
             )}
-
             {isEdit && (
               <span className="text-[11px] bg-indigo-50 text-indigo-500 px-2 py-[2px] rounded-full font-semibold">
                 Editing
+              </span>
+            )}
+            {isSaving && (
+              <span className="flex items-center gap-[5px] text-[11px] bg-amber-50 text-amber-500 px-2 py-[2px] rounded-full font-semibold">
+                <FiRefreshCw size={10} className="animate-spin" />
+                Saving…
               </span>
             )}
           </div>
 
           <button
             onClick={close}
-            className="p-[4px] rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+            disabled={isSaving}
+            className="p-[4px] rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FiX size={16} />
           </button>
@@ -63,19 +70,17 @@ const DraftModal = ({
             <label className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em] block mb-[7px]">
               Draft Title
             </label>
-
             {isView ? (
               <p className="text-[13px] font-semibold text-slate-900">
-                {title || (
-                  <span className="text-slate-300 font-normal">No title</span>
-                )}
+                {title || <span className="text-slate-300 font-normal">No title</span>}
               </p>
             ) : (
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. React Developer Outreach"
-                className="w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] text-slate-700 outline-none focus:border-indigo-500"
+                disabled={isSaving}
+                className="w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] text-slate-700 outline-none focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
               />
             )}
           </div>
@@ -85,31 +90,28 @@ const DraftModal = ({
             <label className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em] block mb-[7px]">
               Subject
             </label>
-
             {isView ? (
               <p className="text-[14px] font-semibold text-slate-900">
-                {subject || (
-                  <span className="text-slate-300 font-normal">No subject</span>
-                )}
+                {subject || <span className="text-slate-300 font-normal">No subject</span>}
               </p>
             ) : (
               <input
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
                 placeholder="e.g. Quick question about your product"
-                className="w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] text-slate-700 outline-none focus:border-indigo-500"
+                disabled={isSaving}
+                className="w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] text-slate-700 outline-none focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
               />
             )}
           </div>
 
-          <div className="border-t border-slate-100"></div>
+          <div className="border-t border-slate-100" />
 
           {/* Body */}
           <div>
             <label className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em] block mb-[7px]">
               Email Body
             </label>
-
             {isView ? (
               <p className="text-[13px] text-slate-700 leading-[1.65] whitespace-pre-line">
                 {body || <span className="text-slate-300">No content.</span>}
@@ -121,9 +123,9 @@ const DraftModal = ({
                   onChange={(e) => setBody(e.target.value)}
                   rows={5}
                   placeholder="Write your outreach email…"
-                  className="w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] text-slate-700 outline-none resize-none leading-[1.6] focus:border-indigo-500"
+                  disabled={isSaving}
+                  className="w-full border border-slate-200 rounded-[9px] px-[12px] py-[9px] text-[13px] text-slate-700 outline-none resize-none leading-[1.6] focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
                 />
-
                 <p className="text-right text-[11px] text-slate-300 mt-[4px]">
                   {body.length} characters
                 </p>
@@ -131,20 +133,20 @@ const DraftModal = ({
             )}
           </div>
 
-          <div className="border-t border-slate-100"></div>
+          <div className="border-t border-slate-100" />
 
           {/* Attachments */}
           <div>
             <label className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em] block mb-[8px]">
               Attachments
             </label>
-
             {isView ? (
               <AttachmentList attachments={attachments} />
             ) : (
               <AttachmentZone
                 attachments={attachments}
                 onChange={setAttachments}
+                disabled={isSaving} // ← pass to AttachmentZone if it supports it
               />
             )}
           </div>
@@ -167,7 +169,6 @@ const DraftModal = ({
                 >
                   Close
                 </button>
-
                 <button
                   onClick={() => setModalMode("edit")}
                   className="inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-semibold rounded-[10px] bg-indigo-500 text-white hover:bg-indigo-600 transition"
@@ -180,16 +181,25 @@ const DraftModal = ({
               <>
                 <button
                   onClick={isEdit ? () => setModalMode("view") : close}
-                  className="inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-medium border border-slate-200 rounded-[10px] text-slate-600 hover:bg-slate-50"
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-medium border border-slate-200 rounded-[10px] text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={save}
-                  className="inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-semibold rounded-[10px] bg-indigo-500 text-white hover:bg-indigo-600 transition"
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-semibold rounded-[10px] bg-indigo-500 text-white hover:bg-indigo-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {isEdit ? "Save Changes" : "Save Draft"}
+                  {isSaving ? (
+                    <>
+                      <FiRefreshCw size={13} className="animate-spin" />
+                      {isEdit ? "Saving…" : "Creating…"}
+                    </>
+                  ) : (
+                    isEdit ? "Save Changes" : "Save Draft"
+                  )}
                 </button>
               </>
             )}
