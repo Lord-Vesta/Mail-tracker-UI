@@ -42,6 +42,7 @@ const EmailFormCard = ({
   const fileRef = useRef(null);
   const [canSend, setCanSend] = useState(false);
   const [containsLinks, setContainsLinks] = useState(false);
+  const [draftId, setDraftId] = useState(null);
 
   const { accounts } = useContext(userContext);
 
@@ -111,6 +112,17 @@ const EmailFormCard = ({
     setAttachments((p) => [...p, ...nf]);
   };
 
+  const addDraftFiles = (files) => {
+    const nf = files.map((f) => ({
+      type: "stored",
+      id: f._id,
+      name: f.filename,
+      size: f.size,
+      mimeType: f.mimeType,
+    }));
+    setAttachments((p) => [...p, ...nf]);
+  };
+
   const handleSend = async () => {
     try {
       const targets = [
@@ -132,6 +144,7 @@ const EmailFormCard = ({
       formData.append("to", JSON.stringify(targets));
       formData.append("cc", JSON.stringify(ccRecipients));
       formData.append("bcc", JSON.stringify(bccRecipients));
+      draftId && formData.append("draftId", draftId);
 
       const attachmentIds = attachments?.filter((a) => a.id).map((a) => a.id);
       formData.append("attachmentIds", JSON.stringify(attachmentIds || []));
@@ -211,6 +224,8 @@ const EmailFormCard = ({
           setSubject={setSubject}
           setBody={setBody}
           setShowDraftPicker={setShowDraftPicker}
+          addFiles={addDraftFiles}
+          setDraftId = {setDraftId}
         />
       )}
 

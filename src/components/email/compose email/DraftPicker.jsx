@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { getDraftsApi } from "../../../utils/api.utils";
 import { userContext } from "../../../context/ContextProvider";
 
-const DraftPicker = ({ setSubject, setBody, setShowDraftPicker }) => {
+const DraftPicker = ({ setSubject, setBody, setShowDraftPicker, addFiles,setDraftId }) => {
   const [drafts, setDrafts] = useState([]);
 
   const { accounts } = useContext(userContext);
@@ -47,6 +47,8 @@ const DraftPicker = ({ setSubject, setBody, setShowDraftPicker }) => {
               setSubject(d.subject);
               setBody(d.body);
               setShowDraftPicker(false);
+              addFiles(d.attachments);
+              setDraftId(d.id);
             }}
             className="flex items-start gap-[10px] bg-white border border-slate-200 rounded-[10px] px-[13px] py-[10px] hover:border-indigo-500 hover:bg-indigo-50 transition"
           >
