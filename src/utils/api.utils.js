@@ -195,3 +195,14 @@ export const deleteDraftApi = async (draftId) => {
     throw error?.response?.data?.message || "Failed to delete draft";
   }
 };
+
+export const getDashboardKPI = async (userId, gmailAccountId) => {
+  try {
+    const response = await axiosclient.get(apiConfig.DASHBOARD_KPI, {
+      params: { userId, gmailAccountId },
+    });
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to fetch dashboard KPI";
+  }
+};
