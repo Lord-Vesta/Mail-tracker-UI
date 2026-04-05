@@ -87,11 +87,23 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
   const [sending, setSending] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
   const [showDraftPicker, setShowDraftPicker] = useState(false);
+  const [draftId, setDraftId] = useState(null);
   const fileRef = useRef(null);
   const { accounts } = useContext(userContext);
 
   if (!viewMail) return null;
   const hue = (viewMail.name.charCodeAt(0) * 17) % 360;
+
+  const addDraftFiles = (files) => {
+    const nf = files.map((f) => ({
+      type: "stored",
+      id: f._id,
+      name: f.filename,
+      size: f.size,
+      mimeType: f.mimeType,
+    }));
+    setAttachments((p) => [...p, ...nf]);
+  };
 
   const validateAndAddFiles = (files) => {
     setAttachmentError("");
@@ -130,12 +142,23 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
       formData.append("to", JSON.stringify([viewMail.email]));
       formData.append("cc", JSON.stringify([]));
       formData.append("bcc", JSON.stringify([]));
-      formData.append("attachmentIds", JSON.stringify([]));
-      attachments.forEach((file) => formData.append("files", file));
+
+      if (draftId) formData.append("draftId", draftId); // ← draft id
+
+      // stored draft attachment ids
+      const attachmentIds = attachments
+        .filter((a) => a.type === "stored" && a.id)
+        .map((a) => a.id);
+      formData.append("attachmentIds", JSON.stringify(attachmentIds)); // ← was always []
+
+      // new local files only
+      const newFiles = attachments.filter((a) => a instanceof File);
+      newFiles.forEach((file) => formData.append("files", file));
+
       await sendEmail(formData);
-      await handleGetSentEmails();
+      if (handleGetSentEmails) await handleGetSentEmails();
       setSentSuccess(true);
-      setViewMail(null);
+      setTimeout(() => setViewMail(null), 1500);
     } catch (err) {
       toast.error("Failed to send follow-up.");
     } finally {
@@ -302,6 +325,8 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                 setSubject={setSubject}
                 setBody={setMessage}
                 setShowDraftPicker={setShowDraftPicker}
+                addFiles={addDraftFiles} // ← add this
+                setDraftId={setDraftId}
               />
             )}
 
@@ -405,7 +430,11 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                   {attachments.map((file, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-[9px] px-[10px] py-[7px]"
+                      className={`flex items-center justify-between border rounded-[9px] px-[10px] py-[7px] ${
+                        file.type === "stored"
+                          ? "bg-indigo-50 border-indigo-200" // ← draft files styled differently
+                          : "bg-slate-50 border-slate-200"
+                      }`}
                     >
                       <div className="flex items-center gap-[8px] min-w-0">
                         <FiFile
@@ -417,7 +446,9 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                             {file.name}
                           </p>
                           <p className="text-[10px] text-slate-400">
-                            {formatFileSize(file.size)}
+                            {file.type === "stored"
+                              ? "From draft"
+                              : formatFileSize(file.size)}{" "}
                           </p>
                         </div>
                       </div>

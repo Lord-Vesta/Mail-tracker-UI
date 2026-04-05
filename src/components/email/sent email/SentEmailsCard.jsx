@@ -79,7 +79,11 @@ const SentEmailsCard = ({ setTab }) => {
       </div>
 
       {viewEmail && (
-        <EmailDetailModal viewMail={viewEmail} setViewMail={setViewEmail} handleGetSentEmails={handleGetSentEmails}/>
+        <EmailDetailModal
+          viewMail={viewEmail}
+          setViewMail={setViewEmail}
+          handleGetSentEmails={handleGetSentEmails}
+        />
       )}
     </div>
   );
