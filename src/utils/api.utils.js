@@ -12,7 +12,8 @@ const {
   UPDATE_DRAFT,
   GET_FOLLOWUPS,
   CHECK_REPLIES,
-  DELETE_DRAFT
+  DELETE_DRAFT,
+  UPDATE_FOLLOWUP_STATUS,
 } = apiConfig;
 
 export const signupUser = async (userData) => {
@@ -187,7 +188,7 @@ export const checkRepliesApi = async (body) => {
 
 export const deleteDraftApi = async (draftId) => {
   try {
-    const response = await axiosclient.delete(DELETE_DRAFT,{
+    const response = await axiosclient.delete(DELETE_DRAFT, {
       params: { id: draftId },
     });
     return response.data;
@@ -204,5 +205,17 @@ export const getDashboardKPI = async (userId, gmailAccountId) => {
     return response.data;
   } catch (error) {
     throw error?.response?.data?.message || "Failed to fetch dashboard KPI";
+  }
+};
+
+export const updateFollowUpStatusApi = async (followUpId, action) => {
+  try {
+    const response = await axiosclient.patch(
+      `/api/followup/${followUpId}/status`,
+      { action },
+    );
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to update follow-up status";
   }
 };

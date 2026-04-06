@@ -15,4 +15,5 @@ export const apiConfig = {
   CHECK_REPLIES: "/api/followup/check-replies",
   DELETE_DRAFT: "/api/draft/:id",
   DASHBOARD_KPI: "/api/gmail/dashboard-kpi",
+  UPDATE_FOLLOWUP_STATUS: "/api/followup/:followUpId/status",
 };

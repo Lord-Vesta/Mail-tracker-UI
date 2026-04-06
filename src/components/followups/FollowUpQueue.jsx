@@ -24,23 +24,14 @@ const FollowUpQueue = ({
   queue,
   setQueue,
   handlegetFollowUpsApi,
-  isLoadingQueue = false, 
+  isLoadingQueue = false,
 }) => {
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
   const [activeModal, setActiveModal] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { accounts } = useContext(userContext);
-
-  const dismiss = (id) =>
-    setQueue((q) =>
-      q.map((x) => (x.id === id ? { ...x, followUpStatus: "Dismissed" } : x)),
-    );
-  const snooze = (id) =>
-    setQueue((q) =>
-      q.map((x) => (x.id === id ? { ...x, followUpStatus: "Snoozed" } : x)),
-    );
-
+  
   const openCompose = (row) => setActiveModal(row);
 
   const visible = queue.filter((x) => {
@@ -130,7 +121,9 @@ const FollowUpQueue = ({
 
       {/* Refresh overlay — subtle dimming over the list while re-checking */}
       {showList && (
-        <div className={`flex flex-col relative transition-opacity duration-200 ${isRefreshing ? "opacity-50 pointer-events-none" : "opacity-100"}`}>
+        <div
+          className={`flex flex-col relative transition-opacity duration-200 ${isRefreshing ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+        >
           {isRefreshing && (
             <div className="absolute inset-0 flex items-center justify-center z-10">
               <div className="flex items-center gap-2 bg-white border border-indigo-100 shadow-md rounded-full px-4 py-2 text-xs font-semibold text-indigo-600">
@@ -146,9 +139,7 @@ const FollowUpQueue = ({
               index={i}
               length={visible.length}
               openCompose={openCompose}
-              snooze={snooze}
-              dismiss={dismiss}
-              setQueue={setQueue}
+              setQueue={setQueue} // ← only these two action props needed now
             />
           ))}
         </div>
