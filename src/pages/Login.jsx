@@ -198,6 +198,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const onLogin = async () => {
+    setLoading(true);
     try {
       const result = await loginUser({ email, password });
       localStorage.setItem("token", result.data);
@@ -207,6 +208,8 @@ const Login = () => {
     } catch (error) {
       console.log(error, "error in login api");
       toast.error(error || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 

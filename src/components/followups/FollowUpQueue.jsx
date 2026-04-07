@@ -54,7 +54,8 @@ const FollowUpQueue = ({
       });
       toast.success("Checked for new replies! Updating the queue...");
       await handlegetFollowUpsApi();
-    } catch (error) {
+    } catch (_error) {
+      console.error(_error);
       toast.error("Failed to refresh replies. Please try again.");
     } finally {
       setIsRefreshing(false);

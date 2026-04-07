@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { FiPaperclip, FiPlus, FiTrash2, FiRefreshCw } from "react-icons/fi";
 import DraftModal from "../components/drafts/DraftModal";
 import {
@@ -125,7 +125,7 @@ const Drafts = () => {
     }
   };
 
-  const fetchDrafts = async () => {
+  const fetchDrafts = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await getDraftsApi({
@@ -146,11 +146,11 @@ const Drafts = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accounts]);
 
   useEffect(() => {
     if (accounts?.length) fetchDrafts();
-  }, [accounts]);
+  }, [accounts, fetchDrafts]);
 
   return (
     <div className="flex flex-col gap-4 h-full">

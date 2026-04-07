@@ -159,7 +159,8 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
       if (handleGetSentEmails) await handleGetSentEmails();
       setSentSuccess(true);
       setTimeout(() => setViewMail(null), 1500);
-    } catch (err) {
+    } catch (_error) {
+      console.error(_error);
       toast.error("Failed to send follow-up.");
     } finally {
       setSending(false);

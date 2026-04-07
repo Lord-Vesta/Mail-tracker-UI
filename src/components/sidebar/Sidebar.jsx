@@ -16,7 +16,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { userContext } from "../../context/userContext";
 
-const Sidebar = ({}) => {
+const Sidebar = () => {
   const location = useLocation();
   const { setActive } = useContext(userContext);
   const activeFromPath = location.pathname.split("/")[1];

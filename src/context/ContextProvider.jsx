@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getGmailAccounts } from "../utils/api.utils";
 import { userContext } from "./userContext";
 

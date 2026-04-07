@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import FollowUpQueueCard from "../components/followups/FollowUpQueueCard";
 import FollowUpQueue from "../components/followups/FollowUpQueue";
 import { userContext } from "../context/userContext";
@@ -18,7 +18,7 @@ const Followups = () => {
     All: queue.length,
   };
 
-  const handlegetFollowUpsApi = async () => {
+  const handlegetFollowUpsApi = useCallback(async () => {
     setIsLoadingQueue(true);
     try {
       const data = await getFollowUpsApi(
@@ -26,18 +26,18 @@ const Followups = () => {
         accounts[0]?.gmailAccountId,
       );
       setQueue(data?.data?.data);
-    } catch (error) {
-      console.error("Error fetching follow-ups:", error);
+    } catch (_error) {
+      console.error("Error fetching follow-ups:", _error);
     } finally {
       setIsLoadingQueue(false);
     }
-  };
+  }, [accounts]);
 
   useEffect(() => {
     if (accounts.length > 0) {
       handlegetFollowUpsApi();
     }
-  }, []);
+  }, [accounts, handlegetFollowUpsApi]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
