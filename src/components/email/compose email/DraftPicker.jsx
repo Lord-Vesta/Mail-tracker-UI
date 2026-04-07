@@ -1,7 +1,7 @@
 import { FiEdit3 } from "react-icons/fi";
 import { useContext, useEffect, useState } from "react";
 import { getDraftsApi } from "../../../utils/api.utils";
-import { userContext } from "../../../context/ContextProvider";
+import { userContext } from "../../../context/userContext";
 
 const DraftPicker = ({
   setSubject,

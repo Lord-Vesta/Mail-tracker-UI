@@ -4,7 +4,7 @@ import SentEmailsHeader from "./SentEmailsHeader";
 import EmailDetailModal from "../../modals/EmailDetailModal";
 import { toast } from "react-toastify";
 import { getSentEmails } from "../../../utils/api.utils";
-import { userContext } from "../../../context/ContextProvider";
+import { userContext } from "../../../context/userContext";
 
 const SentEmailsCard = ({ setTab }) => {
   const [search, setSearch] = useState("");

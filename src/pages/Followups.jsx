@@ -1,14 +1,14 @@
 import { useContext, useEffect, useState } from "react";
 import FollowUpQueueCard from "../components/followups/FollowUpQueueCard";
 import FollowUpQueue from "../components/followups/FollowUpQueue";
-import { userContext } from "../context/ContextProvider";
+import { userContext } from "../context/userContext";
 import { getFollowUpsApi } from "../utils/api.utils";
 
 const FOLLOWUP_THRESHOLD_DAYS = 7;
 
 const Followups = () => {
   const [queue, setQueue] = useState([]);
-  const [isLoadingQueue, setIsLoadingQueue] = useState(false); 
+  const [isLoadingQueue, setIsLoadingQueue] = useState(false);
   const { accounts } = useContext(userContext);
 
   const counts = {
@@ -29,7 +29,7 @@ const Followups = () => {
     } catch (error) {
       console.error("Error fetching follow-ups:", error);
     } finally {
-      setIsLoadingQueue(false); 
+      setIsLoadingQueue(false);
     }
   };
 
@@ -51,7 +51,7 @@ const Followups = () => {
         counts={counts}
         setQueue={setQueue}
         handlegetFollowUpsApi={handlegetFollowUpsApi}
-        isLoadingQueue={isLoadingQueue} 
+        isLoadingQueue={isLoadingQueue}
       />
     </div>
   );

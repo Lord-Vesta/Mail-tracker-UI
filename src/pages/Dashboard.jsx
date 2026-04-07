@@ -10,7 +10,7 @@ import {
   getDashboardKPI,
   checkRepliesApi,
 } from "../utils/api.utils";
-import { userContext } from "../context/ContextProvider";
+import { userContext } from "../context/userContext";
 import { toast } from "react-toastify";
 
 const Dashboard = () => {

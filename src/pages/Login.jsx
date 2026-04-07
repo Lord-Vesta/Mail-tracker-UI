@@ -12,7 +12,7 @@ import AuthLayout from "../layouts/AuthLayout";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../utils/api.utils";
 import { toast } from "react-toastify";
-import { userContext } from "../context/ContextProvider";
+import { userContext } from "../context/userContext";
 
 /* ─── design tokens (mirrors SignupPage) ─────────────────────── */
 const token = {
@@ -199,7 +199,6 @@ const Login = () => {
 
   const onLogin = async () => {
     try {
-
       const result = await loginUser({ email, password });
       localStorage.setItem("token", result.data);
       fetchAccounts();

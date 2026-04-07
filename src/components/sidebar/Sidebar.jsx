@@ -14,7 +14,7 @@ import SidebarSection from "./SidebarSection";
 import UserProfile from "./UserProfile.jsx";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import { userContext } from "../../context/ContextProvider.jsx";
+import { userContext } from "../../context/userContext";
 
 const Sidebar = ({}) => {
   const location = useLocation();
