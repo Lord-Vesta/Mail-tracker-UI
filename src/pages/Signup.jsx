@@ -195,7 +195,7 @@ const SignupPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-  const [loading, setLoading] = useState(false);
+
   const [errors, setErrors] = useState({});
   const [agreed, setAgreed] = useState(false);
 
@@ -243,7 +243,6 @@ const SignupPage = () => {
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length) return;
-    // setLoading(true);
     onSignup();
   };
 
@@ -440,24 +439,9 @@ const SignupPage = () => {
           <button
             className="sp-submit"
             onClick={submit}
-            disabled={loading}
             style={{ marginTop: 6 }}
           >
-            {loading ? (
-              <span
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 9,
-                }}
-              >
-                <FiRefreshCw size={14} className="sp-spin" />
-                Creating account…
-              </span>
-            ) : (
-              "Create account →"
-            )}
+            "Create account →"
           </button>
         </div>
 
