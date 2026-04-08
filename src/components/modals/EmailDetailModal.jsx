@@ -299,8 +299,9 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
             <div className="grid grid-cols-3 gap-[10px]">
               {[
                 { label: "Sent", value: viewMail.date },
-                { label: "Opens", value: viewMail.opens ?? 0 },
+                { label: "clicks", value: viewMail.clicksCount ?? 0 },
                 { label: "Replies", value: viewMail.replies ?? 0 },
+                { label: "Replied", value: viewMail.isReplied ? "Yes" : "No" },
               ].map(({ label, value }) => (
                 <div
                   key={label}
