@@ -17,7 +17,7 @@ import {
 import DraftPicker from "../email/compose email/DraftPicker.jsx";
 import { convertToHtml } from "../../utils/fileUtils.js";
 import { userContext } from "../../context/userContext.js";
-import { sendEmail } from "../../utils/api.utils.js";
+import { sendFollowupApi } from "../../utils/api.utils.js";
 import { toast } from "react-toastify";
 
 const DAY_MS = 86400000;
@@ -193,11 +193,7 @@ const FollowupModal = ({ lead, onClose }) => {
 
       formData.append("gmailAccountId", accounts?.[0]?.gmailAccountId);
       formData.append("userId", accounts?.[0]?.id);
-      formData.append("subject", subject);
       formData.append("body", html);
-      formData.append("to", JSON.stringify(lead.to));
-      formData.append("cc", JSON.stringify(lead.cc || []));
-      formData.append("bcc", JSON.stringify(lead.bcc || []));
 
       if (draftId) formData.append("draftId", draftId);
 
@@ -211,7 +207,7 @@ const FollowupModal = ({ lead, onClose }) => {
         .map((a) => a.file);
       newFiles.forEach((file) => formData.append("files", file));
 
-      await sendEmail(formData);
+      await sendFollowupApi(formData);
       setSentSuccess(true);
       setTimeout(() => onClose(), 1500);
     } catch (error) {

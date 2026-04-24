@@ -12,9 +12,12 @@ import {
   FiChevronUp,
   FiFile,
   FiTrash2,
+  // FiReply,
+  FiClock,
 } from "react-icons/fi";
-import { BsPaperclip } from "react-icons/bs";
-import { downloadAttachment, sendEmail } from "../../utils/api.utils.js";
+import {
+  sendFollowupApi,
+} from "../../utils/api.utils.js";
 import { useContext, useRef, useState } from "react";
 import { userContext } from "../../context/userContext.js";
 import { convertToHtml } from "../../utils/fileUtils.js";
@@ -77,8 +80,274 @@ const getFileIconColor = (filename) => {
   return map[ext] || "text-gray-400";
 };
 
+const ThreadItem = ({ item, isReply = false, isFollowUp = false, hue }) => {
+  const [expandedAttachments, setExpandedAttachments] = useState(false);
+  const [showRecipients, setShowRecipients] = useState(false);
+  const [expandedBody, setExpandedBody] = useState(false);
+
+  return (
+    <div
+      className={`border rounded-[12px] p-[14px] transition ${
+        isReply
+          ? "border-green-200 bg-green-50"
+          : isFollowUp
+            ? "border-indigo-200 bg-indigo-50"
+            : "border-slate-200 bg-slate-50 hover:bg-slate-100"
+      }`}
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between mb-[10px]">
+        <div className="flex items-center gap-[10px]">
+          <div
+            className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-[12px] font-bold shrink-0"
+            style={{
+              background: isReply
+                ? "#dcfce7"
+                : isFollowUp
+                  ? "#e0e7ff"
+                  : `hsl(${hue},55%,88%)`,
+              color: isReply
+                ? "#166534"
+                : isFollowUp
+                  ? "#312e81"
+                  : `hsl(${hue},45%,35%)`,
+            }}
+          >
+            {item.type === "reply" ? <FiClock size={14} /> : "Y"}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[12.5px] font-semibold text-slate-900">
+              {item.type === "reply" ? item.from : "You"}
+            </p>
+            <p className="text-[10.5px] text-slate-500 flex items-center gap-[4px]">
+              <FiClock size={10} />
+              {new Date(
+                item.sentAt || item.timestamp || item.date,
+              ).toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        {/* Type badge */}
+        {!isReply && (
+          <span
+            className={`text-[10px] font-bold px-[8px] py-[3px] rounded-full whitespace-nowrap text-white flex-shrink-0 ${
+              isFollowUp ? "bg-indigo-500" : "bg-slate-500"
+            }`}
+          >
+            {isFollowUp ? "Follow-up" : "Original"}
+          </span>
+        )}
+      </div>
+
+      {/* Recipients */}
+      {!isReply && (item.cc?.length > 0 || item.bcc?.length > 0) && (
+        <div className="mb-[8px]">
+          <button
+            onClick={() => setShowRecipients(!showRecipients)}
+            className="text-[10.5px] text-indigo-500 font-semibold"
+          >
+            {showRecipients ? "Hide details" : "Show CC / BCC"}
+          </button>
+
+          {showRecipients && (
+            <div className="mt-[4px] text-[10.5px] text-slate-500 space-y-[2px]">
+              {item.cc?.length > 0 && (
+                <div>
+                  <span className="font-semibold">Cc:</span>{" "}
+                  {item.cc.join(", ")}
+                </div>
+              )}
+              {item.bcc?.length > 0 && (
+                <div>
+                  <span className="font-semibold">Bcc:</span>{" "}
+                  {item.bcc.join(", ")}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Subject */}
+      {item.subject && (
+        <div className="mb-[8px]">
+          <p className="text-[12px] font-bold text-slate-900">{item.subject}</p>
+        </div>
+      )}
+
+      {/* Content */}
+      <div
+        className={`mb-[10px] rounded-[9px] p-[10px] ${
+          isReply ? "bg-white border border-green-100" : "bg-white"
+        }`}
+      >
+        <div
+          className={`text-[12px] text-slate-700 leading-[1.6] overflow-hidden ${
+            !expandedBody ? "max-h-[80px]" : ""
+          }`}
+          dangerouslySetInnerHTML={{
+            __html: item.htmlBody || item.message || "<em>No content</em>",
+          }}
+        />
+
+        {/* Toggle */}
+        {(item.htmlBody || item.message)?.length > 200 && (
+          <button
+            onClick={() => setExpandedBody(!expandedBody)}
+            className="mt-[6px] text-[10.5px] font-semibold text-indigo-500"
+          >
+            {expandedBody ? "Show less" : "Read more"}
+          </button>
+        )}
+      </div>
+
+      {/* Attachments */}
+      {item.attachmentsMeta?.length > 0 && (
+        <div className="mb-[8px]">
+          <button
+            onClick={() => setExpandedAttachments(!expandedAttachments)}
+            className="flex items-center gap-[6px] text-[11px] font-semibold text-slate-600 hover:text-slate-900 mb-[8px]"
+          >
+            <FiPaperclip size={11} />
+            {item.attachmentsMeta.length} attachment
+            {item.attachmentsMeta.length !== 1 ? "s" : ""}
+            {expandedAttachments ? (
+              <FiChevronUp size={10} />
+            ) : (
+              <FiChevronDown size={10} />
+            )}
+          </button>
+
+          {expandedAttachments && (
+            <div className="flex flex-col gap-[6px]">
+              {item.attachmentsMeta.map((file, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-[9px] px-[10px] py-[7px] hover:bg-slate-150 transition"
+                >
+                  <div className="flex items-center gap-[8px] min-w-0">
+                    <FiFile
+                      size={12}
+                      className={getFileIconColor(file.filename)}
+                    />
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold text-slate-900 truncate">
+                        {file.filename}
+                      </p>
+                      <p className="text-[9.5px] text-slate-500">
+                        {formatFileSize(file.size)}
+                      </p>
+                    </div>
+                  </div>
+                  <button className="text-indigo-500 hover:text-indigo-700 text-[10px] font-semibold flex-shrink-0 ml-[8px]">
+                    DL
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Stats (for sent items only) */}
+      {!isReply && (
+        <div className="flex gap-[12px] text-[10.5px] text-slate-500 pt-[8px] border-t border-slate-200">
+          <span>📧 Opens: {item.opensCount || 0}</span>
+          <span>•</span>
+          <span>🔗 Clicks: {item.clicksCount || 0}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const demoViewMail = {
+  name: "John Doe",
+  email: "john@example.com",
+  subject: "Detailed Project Proposal Discussion",
+  status: "Opened",
+  sentAt: new Date().toISOString(),
+
+  cc: ["manager@company.com", "teamlead@company.com"],
+  bcc: ["internal@company.com"],
+
+  htmlBody: `
+    <p>Hi John,</p>
+    <p>
+      I hope you're doing well. I wanted to follow up regarding the project proposal we discussed earlier.
+      Please find the attached documents which include detailed breakdowns of the scope, timelines,
+      deliverables, and cost estimations.
+    </p>
+    <p>
+      The proposal outlines multiple phases of execution including planning, development,
+      testing, and deployment. Each phase has been carefully structured to ensure timely delivery
+      while maintaining high quality standards.
+    </p>
+    <p>
+      Additionally, we have included technical documentation and supporting materials to help your
+      team better understand the architecture and implementation approach.
+    </p>
+    <p>
+      Please review the attachments and let me know if you have any questions or require further clarification.
+      Looking forward to your feedback.
+    </p>
+    <p>Best regards,<br/>Yash</p>
+  `,
+
+  openCount: 5,
+  clicksCount: 2,
+
+  attachmentsMeta: [
+    { filename: "Proposal.pdf", size: 2400000 },
+    { filename: "Architecture.docx", size: 1800000 },
+    { filename: "Costing.xlsx", size: 950000 },
+    { filename: "Timeline.pptx", size: 2100000 },
+    { filename: "Assets.zip", size: 5200000 },
+  ],
+
+  followUps: [
+    {
+      subject: "Follow-up: Proposal Review",
+      htmlBody: `
+    <p>Hi John,</p>
+    <p>
+      I hope you're doing well. I wanted to follow up regarding the project proposal we discussed earlier.
+      Please find the attached documents which include detailed breakdowns of the scope, timelines,
+      deliverables, and cost estimations.
+    </p>
+    <p>
+      The proposal outlines multiple phases of execution including planning, development,
+      testing, and deployment. Each phase has been carefully structured to ensure timely delivery
+      while maintaining high quality standards.
+    </p>
+    <p>
+      Additionally, we have included technical documentation and supporting materials to help your
+      team better understand the architecture and implementation approach.
+    </p>
+    <p>
+      Please review the attachments and let me know if you have any questions or require further clarification.
+      Looking forward to your feedback.
+    </p>
+    <p>Best regards,<br/>Yash</p>
+  `,
+      sentAt: new Date().toISOString(),
+      cc: ["manager@company.com"],
+      bcc: [],
+      attachmentsMeta: [{ filename: "Reminder.pdf", size: 500000 }],
+    },
+  ],
+
+  replies: [
+    {
+      message: "Thanks for sharing, we are reviewing this internally.",
+      timestamp: new Date().toISOString(),
+    },
+  ],
+};
+
 const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
-  const [mode, setMode] = useState("detail");
+  const [mode, setMode] = useState("thread");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState([]);
@@ -93,6 +362,13 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
 
   if (!viewMail) return null;
   const hue = (viewMail.name.charCodeAt(0) * 17) % 360;
+
+  const threadItems = (viewMail.messages || [])
+    .map((m) => ({
+      ...m,
+      timestamp: m.sentAt,
+    }))
+    .sort((a, b) => new Date(a.sentAt) - new Date(b.sentAt));
 
   const addDraftFiles = (files) => {
     const nf = files.map((f) => ({
@@ -134,6 +410,8 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
     if (!subject.trim() || !message.trim()) return;
     setSending(true);
     try {
+      const initialMessage = viewMail.messages?.[0];
+      console.log(viewMail,"-------------------------------------------------")
       const formData = new FormData();
       formData.append("gmailAccountId", accounts?.[0]?.gmailAccountId);
       formData.append("userId", accounts?.[0]?.id);
@@ -142,23 +420,26 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
       formData.append("to", JSON.stringify([viewMail.email]));
       formData.append("cc", JSON.stringify([]));
       formData.append("bcc", JSON.stringify([]));
+      // formData.append("threadId", viewMail.threadId);
+      formData.append("messageId", initialMessage?.id);
 
-      if (draftId) formData.append("draftId", draftId); // ← draft id
+      if (draftId) formData.append("draftId", draftId);
 
-      // stored draft attachment ids
       const attachmentIds = attachments
         .filter((a) => a.type === "stored" && a.id)
         .map((a) => a.id);
-      formData.append("attachmentIds", JSON.stringify(attachmentIds)); // ← was always []
+      formData.append("attachmentIds", JSON.stringify(attachmentIds || []));
 
-      // new local files only
       const newFiles = attachments.filter((a) => a instanceof File);
       newFiles.forEach((file) => formData.append("files", file));
 
-      await sendEmail(formData);
+      await sendFollowupApi(formData);
       if (handleGetSentEmails) await handleGetSentEmails();
       setSentSuccess(true);
-      setTimeout(() => setViewMail(null), 1500);
+      setTimeout(() => {
+        setViewMail(null);
+        setMode("thread");
+      }, 1500);
     } catch (_error) {
       console.error(_error);
       toast.error("Failed to send follow-up.");
@@ -170,44 +451,49 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
   return (
     <div
       onClick={() => setViewMail(null)}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-[16px]"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-[580px] bg-white rounded-[20px] overflow-hidden shadow-[0_32px_80px_rgba(15,23,42,0.18)] border border-slate-100 animate-[modalIn_0.22s_cubic-bezier(0.34,1.56,0.64,1)]"
+        className="w-full max-w-[640px] bg-white rounded-[20px] overflow-hidden shadow-[0_32px_80px_rgba(15,23,42,0.18)] border border-slate-100 animate-[modalIn_0.22s_cubic-bezier(0.34,1.56,0.64,1)] flex flex-col max-h-[90vh]"
       >
         {/* ── HEADER ── */}
-        <div className="flex items-center justify-between px-[22px] py-[16px] bg-gradient-to-r from-indigo-500 to-indigo-400">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between px-[22px] py-[16px] bg-gradient-to-r from-indigo-500 to-indigo-400 border-b border-indigo-400 flex-shrink-0">
+          <div className="flex items-center gap-[12px] flex-1 min-w-0">
             {mode === "compose" && (
               <button
-                onClick={() => setMode("detail")}
-                className="flex items-center justify-center w-[28px] h-[28px] rounded-md bg-white/20 border border-white/30 text-white hover:bg-white/30"
+                onClick={() => {
+                  setMode("thread");
+                  setSubject("");
+                  setMessage("");
+                  setAttachments([]);
+                }}
+                className="flex items-center justify-center w-[28px] h-[28px] rounded-md bg-white/20 border border-white/30 text-white hover:bg-white/30 flex-shrink-0"
               >
                 <FiArrowLeft size={14} />
               </button>
             )}
-            <div>
-              <h3 className="text-[15px] font-extrabold text-white">
-                {mode === "detail"
-                  ? "Email Details"
+            <div className="min-w-0 flex-1">
+              <h3 className="text-[15px] font-extrabold text-white truncate">
+                {mode === "thread"
+                  ? "Email Thread"
                   : `Follow-up to ${viewMail.name}`}
               </h3>
-              <p className="text-[12px] text-white/70">
-                {mode === "detail" ? "Sent outreach record" : viewMail.email}
+              <p className="text-[12px] text-white/70 truncate">
+                {viewMail.email}
               </p>
             </div>
           </div>
           <button
             onClick={() => setViewMail(null)}
-            className="flex items-center justify-center w-[30px] h-[30px] rounded-md bg-white/20 border border-white/30 text-white hover:bg-white/30"
+            className="flex items-center justify-center w-[30px] h-[30px] rounded-md bg-white/20 border border-white/30 text-white hover:bg-white/30 flex-shrink-0"
           >
             <FiX size={14} />
           </button>
         </div>
 
         {/* ── USER STRIP ── */}
-        <div className="flex items-center gap-[13px] px-[22px] py-[14px] border-b border-slate-100 bg-slate-50">
+        <div className="flex items-center gap-[13px] px-[22px] py-[14px] border-b border-slate-100 bg-slate-50 flex-shrink-0">
           <div
             className="w-[38px] h-[38px] rounded-full flex items-center justify-center text-[14px] font-extrabold border shrink-0"
             style={{
@@ -219,127 +505,60 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
             {viewMail.name[0]}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-bold text-slate-900">
+            <p className="text-[13px] font-bold text-slate-900 truncate">
               {viewMail.name}
             </p>
-            <p className="text-[11.5px] text-slate-400">{viewMail.email}</p>
+            <p className="text-[11.5px] text-slate-400 truncate">
+              {viewMail.email}
+            </p>
           </div>
           <span
-            className={`px-[11px] py-[4px] rounded-full text-[11.5px] font-bold ${statusColors[viewMail.status] || "bg-slate-100 text-slate-700"}`}
+            className={`px-[11px] py-[4px] rounded-full text-[11.5px] font-bold flex-shrink-0 ${
+              statusColors[viewMail.status] || "bg-slate-100 text-slate-700"
+            }`}
           >
             {viewMail.status}
           </span>
         </div>
 
-        {/* ── DETAIL VIEW ── */}
-        {mode === "detail" && (
-          <div className="px-[22px] py-[18px] flex flex-col gap-[16px]">
-            <div>
-              <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-[6px]">
-                Subject
-              </p>
-              <p className="text-[13.5px] font-semibold text-slate-900">
-                {viewMail.subject}
-              </p>
-            </div>
-            <div className="border-t border-slate-100" />
-            <div>
-              <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-[8px]">
-                Message
-              </p>
-              <div className="bg-slate-50 border border-slate-100 rounded-[12px] px-[16px] py-[14px] max-h-[130px] overflow-y-auto">
-                <div
-                  className="text-[13.5px] text-slate-700 [&>a]:text-indigo-500 [&>a]:underline"
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      viewMail.message ||
-                      "<span class='text-slate-300'>No content</span>",
-                  }}
+        {/* ── THREAD VIEW ── */}
+        {mode === "thread" && (
+          <div className="flex-1 overflow-y-auto px-[22px] py-[16px] space-y-[12px]">
+            {threadItems.length > 0 ? (
+              threadItems.map((item, idx) => (
+                <ThreadItem
+                  key={idx}
+                  item={item}
+                  isReply={item.type === "reply"}
+                  isFollowUp={item.type === "followup"}
+                  hue={hue}
                 />
-              </div>
-            </div>
-            <div className="border-t border-slate-100" />
-            {viewMail.attachmentsMeta?.length > 0 && (
-              <div>
-                <p className="text-[10.5px] font-bold uppercase tracking-wider text-slate-400 mb-[8px]">
-                  Attachments
-                </p>
-                <div className="flex flex-col gap-[8px]">
-                  {viewMail.attachmentsMeta.map((file, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-[10px] px-[12px] py-[8px] hover:bg-slate-100 transition"
-                    >
-                      <div className="flex items-center gap-[8px] min-w-0">
-                        <div className="w-8 h-8 rounded-[8px] bg-indigo-50 text-indigo-500 flex items-center justify-center">
-                          <BsPaperclip />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <p className="text-[12.5px] font-semibold text-slate-800 truncate">
-                            {file.filename}
-                          </p>
-                          <p className="text-[10px] text-slate-400">
-                            {file.mimeType}
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-600"
-                        onClick={() =>
-                          downloadAttachment({
-                            messageId: viewMail.messageId,
-                            filename: file.filename,
-                            gmailAccountId: accounts[0].gmailAccountId,
-                            userId: accounts[0].id,
-                          })
-                        }
-                      >
-                        Download
-                      </button>
-                    </div>
-                  ))}
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-[32px] text-slate-400">
+                <p className="text-[13px]">No thread items</p>
               </div>
             )}
-            <div className="grid grid-cols-3 gap-[10px]">
-              {[
-                { label: "Sent", value: viewMail.date },
-                { label: "clicks", value: viewMail.clicksCount ?? 0 },
-                { label: "Replies", value: viewMail.replies ?? 0 },
-                { label: "Replied", value: viewMail.isReplied ? "Yes" : "No" },
-              ].map(({ label, value }) => (
-                <div
-                  key={label}
-                  className="bg-slate-50 border border-slate-100 rounded-[12px] px-[14px] py-[12px]"
-                >
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-[4px]">
-                    {label}
-                  </p>
-                  <p className="text-[13px] font-bold text-slate-900 font-mono">
-                    {value}
-                  </p>
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
         {/* ── COMPOSE VIEW ── */}
         {mode === "compose" && (
-          <div className="px-[22px] py-[18px] flex flex-col gap-[14px] max-h-[460px] overflow-y-auto">
+          <div className="flex-1 overflow-y-auto px-[22px] py-[16px] space-y-[14px]">
             {showDraftPicker && (
               <DraftPicker
                 setSubject={setSubject}
                 setBody={setMessage}
                 setShowDraftPicker={setShowDraftPicker}
-                addFiles={addDraftFiles} // ← add this
+                addFiles={addDraftFiles}
                 setDraftId={setDraftId}
               />
             )}
 
-            {/* Original context strip */}
-            <div className="flex items-center gap-2 px-[12px] py-[8px] bg-amber-50 border border-amber-200 rounded-[10px] text-[11.5px] text-amber-800">
-              <span className="font-semibold">Re:</span> {viewMail.subject}
+            {/* Original context */}
+            <div className="flex items-center gap-[8px] px-[12px] py-[8px] bg-amber-50 border border-amber-200 rounded-[10px] text-[11.5px] text-amber-800">
+              <span className="font-semibold">Re:</span>
+              <span className="truncate">{viewMail.subject}</span>
             </div>
 
             {/* Subject */}
@@ -362,7 +581,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                 <FiAlignLeft size={11} /> Message
               </label>
               <textarea
-                rows={6}
+                rows={5}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 disabled={sending}
@@ -379,7 +598,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
               <label className="flex items-center gap-[5px] text-[11px] font-bold text-slate-400 uppercase tracking-[0.05em]">
                 <FiPaperclip size={11} /> Attachments
                 {attachments.length > 0 && (
-                  <span className="ml-1 px-[6px] py-[1px] rounded-full bg-indigo-50 text-indigo-500 text-[10px]">
+                  <span className="ml-[6px] px-[6px] py-[1px] rounded-full bg-indigo-50 text-indigo-500 text-[10px]">
                     {attachments.length}
                   </span>
                 )}
@@ -439,7 +658,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                       key={i}
                       className={`flex items-center justify-between border rounded-[9px] px-[10px] py-[7px] ${
                         file.type === "stored"
-                          ? "bg-indigo-50 border-indigo-200" // ← draft files styled differently
+                          ? "bg-indigo-50 border-indigo-200"
                           : "bg-slate-50 border-slate-200"
                       }`}
                     >
@@ -455,7 +674,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                           <p className="text-[10px] text-slate-400">
                             {file.type === "stored"
                               ? "From draft"
-                              : formatFileSize(file.size)}{" "}
+                              : formatFileSize(file.size)}
                           </p>
                         </div>
                       </div>
@@ -464,7 +683,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
                           setAttachments((a) => a.filter((_, j) => j !== i))
                         }
                         disabled={sending}
-                        className="text-slate-400 hover:text-red-500 transition disabled:pointer-events-none p-[4px] rounded hover:bg-red-50"
+                        className="text-slate-400 hover:text-red-500 transition disabled:pointer-events-none p-[4px] rounded hover:bg-red-50 flex-shrink-0"
                       >
                         <FiTrash2 size={13} />
                       </button>
@@ -477,21 +696,30 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
         )}
 
         {/* ── FOOTER ── */}
-        <div className="px-[22px] py-[14px] border-t border-slate-100 flex items-center justify-between bg-slate-50">
-          {mode === "detail" ? (
+        <div className="px-[22px] py-[14px] border-t border-slate-100 flex items-center justify-between bg-slate-50 flex-shrink-0">
+          {mode === "thread" ? (
             <>
-              <button
-                onClick={() => setViewMail(null)}
-                className="px-[16px] py-[8px] rounded-[10px] text-[13px] font-semibold border border-slate-200 text-slate-500 hover:bg-slate-100 transition"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => setMode("compose")}
-                className="px-[16px] py-[8px] rounded-[10px] text-[13px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 shadow-md transition"
-              >
-                Send Followup →
-              </button>
+              <div className="text-[11.5px] text-slate-500">
+                {threadItems.length} message
+                {threadItems.length !== 1 ? "s" : ""} in thread
+              </div>
+              <div className="flex gap-[8px]">
+                <button
+                  onClick={() => setViewMail(null)}
+                  className="px-[16px] py-[8px] rounded-[10px] text-[13px] font-semibold border border-slate-200 text-slate-500 hover:bg-slate-100 transition"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setMode("compose");
+                    setSubject(`Re: ${viewMail.subject}`);
+                  }}
+                  className="px-[16px] py-[8px] rounded-[10px] text-[13px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 shadow-md transition"
+                >
+                  Send Follow-up →
+                </button>
+              </div>
             </>
           ) : (
             <>
@@ -510,7 +738,7 @@ const EmailDetailModal = ({ viewMail, setViewMail, handleGetSentEmails }) => {
               </button>
 
               {sentSuccess ? (
-                <div className="flex items-center gap-2 px-[14px] py-[8px] bg-green-100 text-green-700 rounded-[10px] text-[13px] font-semibold">
+                <div className="flex items-center gap-[6px] px-[14px] py-[8px] bg-green-100 text-green-700 rounded-[10px] text-[13px] font-semibold">
                   <FiCheck size={13} /> Sent!
                 </div>
               ) : (

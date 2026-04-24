@@ -11,6 +11,7 @@ const {
   GET_FOLLOWUPS,
   CHECK_REPLIES,
   DELETE_DRAFT,
+  SEND_FOLLOWUP,
 } = apiConfig;
 
 export const signupUser = async (userData) => {
@@ -204,5 +205,18 @@ export const updateFollowUpStatusApi = async (followUpId, action) => {
     return response.data;
   } catch (error) {
     throw error?.response?.data?.message || "Failed to update follow-up status";
+  }
+};
+
+export const sendFollowupApi = async (emailData) => {
+  try {
+    const response = await axiosclient.post(SEND_FOLLOWUP, emailData, {
+      headers: {
+        "Content-Type": "application/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to send follow-up";
   }
 };

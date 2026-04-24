@@ -137,6 +137,7 @@ const Drafts = () => {
         title: d.title,
         subject: d.subject,
         body: d.htmlBody,
+        body_preview: d.bodyPreview,
         attachments: d.attachments || [],
       }));
       setDrafts(formatted);
@@ -152,15 +153,6 @@ const Drafts = () => {
     if (accounts?.length) fetchDrafts();
   }, [accounts, fetchDrafts]);
 
-  const getPreviewText = (html) => {
-    return html
-      .replace(/&nbsp;/gi, " ")
-      .replace(/<style[^>]*>.*?<\/style>/gi, "")
-      .replace(/<script[^>]*>.*?<\/script>/gi, "")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  };
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -230,7 +222,7 @@ const Drafts = () => {
                     </td>
                     <td className="px-[18px] py-[14px] text-slate-500 max-w-[280px]">
                       <span className="block truncate max-w-[260px]">
-                        {getPreviewText(row.body)}
+                        {row.body_preview}
                       </span>
                     </td>
                     <td className="px-[18px] py-[14px]">

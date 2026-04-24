@@ -1,4 +1,6 @@
+import { FiClock } from "react-icons/fi";
 import { statusConfig } from "../../utils/statusConfig.jsx";
+// import { FiReply } from "react-icons/fi";
 
 const SkeletonRow = () => (
   <tr className="border-b border-slate-50 animate-pulse">
@@ -16,6 +18,13 @@ const SkeletonRow = () => (
     <td className="px-[14px] py-[10px]">
       <div className="h-[10px] w-[160px] bg-slate-100 rounded" />
     </td>
+    {/* Activity */}
+    <td className="px-[14px] py-[10px]">
+      <div className="flex gap-[6px]">
+        <div className="h-[20px] w-[50px] bg-slate-200 rounded-full" />
+        <div className="h-[20px] w-[50px] bg-slate-200 rounded-full" />
+      </div>
+    </td>
     {/* Date */}
     <td className="px-[14px] py-[10px]">
       <div className="h-[10px] w-[70px] bg-slate-100 rounded" />
@@ -32,6 +41,8 @@ const OutreachTable = ({
   setViewMail,
   isLoading = false,
 }) => {
+
+  console.log("Rendering OutreachTable with data:", recentOutreachPreview);
   return (
     <div className="bg-white border-slate-100 shadow-sm flex flex-col h-full">
       <div className="flex-1 overflow-y-auto">
@@ -39,16 +50,20 @@ const OutreachTable = ({
           {/* Header */}
           <thead className="sticky top-0 z-[1]">
             <tr className="bg-[#fafafa] border-b border-slate-100">
-              {["Recipient", "Email Preview", "Sent Date", "Status"].map(
-                (h) => (
-                  <th
-                    key={h}
-                    className="text-left px-[14px] py-[8px] text-[10px] font-bold text-slate-400 uppercase tracking-[0.05em]"
-                  >
-                    {h}
-                  </th>
-                ),
-              )}
+              {[
+                "Recipient",
+                "Email Preview",
+                "Activity",
+                "Sent Date",
+                "Status",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="text-left px-[14px] py-[8px] text-[10px] font-bold text-slate-400 uppercase tracking-[0.05em]"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
 
@@ -61,7 +76,7 @@ const OutreachTable = ({
             {!isLoading && recentOutreachPreview.length === 0 && (
               <tr>
                 <td
-                  colSpan={4}
+                  colSpan={5}
                   className="py-16 text-center text-slate-300 text-[13px]"
                 >
                   No emails found.
@@ -77,6 +92,8 @@ const OutreachTable = ({
                   color: "#374151",
                 };
                 const hue = ((row.name?.charCodeAt(0) || 65) * 17) % 360;
+                const hasReplies = row.isReplied || row.replies > 0;
+                const hasFollowUps = row.followUpCount > 0;
 
                 return (
                   <tr
@@ -112,6 +129,31 @@ const OutreachTable = ({
                       <p className="text-slate-500 truncate max-w-[180px]">
                         {row.preview}
                       </p>
+                    </td>
+
+                    {/* Activity Indicators */}
+                    <td className="px-[14px] py-[10px]">
+                      <div className="flex items-center gap-[6px]">
+                        {/* Opens */}
+                        <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-amber-100 text-amber-700">
+                          📧 {row.openCount || 0}
+                        </span>
+
+                        {/* Replies badge */}
+                        {hasReplies && (
+                          <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-green-100 text-green-700 flex items-center gap-[3px]">
+                            <FiClock size={9} />
+                            {row.replies || 1}
+                          </span>
+                        )}
+
+                        {/* Follow-ups badge */}
+                        {hasFollowUps && (
+                          <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-indigo-100 text-indigo-700">
+                            +{row.followUpCount} FU
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Date */}
