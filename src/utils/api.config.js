@@ -17,4 +17,6 @@ export const apiConfig = {
   DASHBOARD_KPI: "/api/gmail/dashboard-kpi",
   UPDATE_FOLLOWUP_STATUS: "/api/followup/:followUpId/status",
   SEND_FOLLOWUP: "/api/followup/send-followup",
+  SEND_OTP: "/api/auth/send-otp",
+  VERIFY_OTP: "/api/auth/verify-otp",
 };

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { getGmailAccounts } from "../utils/api.utils.js";
 import { userContext } from "./userContext.js";
+import { jwtDecode } from "jwt-decode";
 
 const ContextProvider = ({ children }) => {
   const [screen, setScreen] = useState("landing");
   const [user, setUser] = useState(null);
   const [active, setActive] = useState("dashboard");
   const [accounts, setAccounts] = useState([]);
+  const [userName, setUserName] = useState("");
 
   const fetchAccounts = async () => {
     try {
@@ -28,10 +30,27 @@ const ContextProvider = ({ children }) => {
   useEffect(() => {
     const init = async () => {
       const token = localStorage.getItem("token");
+
       if (token) {
-        await fetchAccounts();
+        try {
+          const decoded = jwtDecode(token);
+
+          console.log("Decoded:", decoded);
+
+          // 👇 depends on what you stored in backend
+          const username = decoded.name || decoded.email;
+
+          console.log("Username:", username);
+
+          setUserName(username);
+
+          await fetchAccounts();
+        } catch (err) {
+          console.error("Invalid token");
+        }
       }
     };
+
     init();
   }, []);
 
@@ -46,6 +65,7 @@ const ContextProvider = ({ children }) => {
         setActive,
         accounts,
         fetchAccounts,
+        userName
       }}
     >
       {children}

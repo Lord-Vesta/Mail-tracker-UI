@@ -8,7 +8,7 @@ const RequireGmail = ({ children }) => {
 
   if (!accounts || accounts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen text-center">
+      <div className="flex flex-col items-center justify-center h-full text-center">
         <h2 className="text-lg font-semibold mb-2">Gmail Not Connected</h2>
         <p className="text-sm text-gray-500 mb-4">
           Please connect your Gmail account to use the app.
