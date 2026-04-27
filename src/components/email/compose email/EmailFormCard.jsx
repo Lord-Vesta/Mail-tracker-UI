@@ -20,6 +20,7 @@ import { sendEmail } from "../../../utils/api.utils.js";
 import { toast } from "react-toastify";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import isEmail from "validator/lib/isEmail";
 
 const EmailFormCard = ({
   setSubject,
@@ -62,9 +63,18 @@ const EmailFormCard = ({
   };
 
   const handleRecipientKey = (e) => {
-    if (["Enter", ",", " "].includes(e.key)) {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
-      addRecipient(recipientInput);
+
+      if (isValidEmail(recipientInput)) {
+        addRecipient(recipientInput);
+      }
+    }
+    console.log("Recipient input key:", e.key, recipientInput);
+    if (e.key === "Tab") {
+      if (isValidEmail(recipientInput)) {
+        addRecipient(recipientInput);
+      }
     }
   };
 
@@ -80,9 +90,18 @@ const EmailFormCard = ({
   };
 
   const handleCCRecipientKey = (e) => {
-    if (["Enter", ",", " "].includes(e.key)) {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
-      addCCRecipient(ccRecipientInput);
+
+      if (isValidEmail(ccRecipientInput)) {
+        addCCRecipient(ccRecipientInput);
+      }
+    }
+
+    if (e.key === "Tab") {
+      if (isValidEmail(ccRecipientInput)) {
+        addCCRecipient(ccRecipientInput);
+      }
     }
   };
 
@@ -98,9 +117,18 @@ const EmailFormCard = ({
   };
 
   const handleBCCRecipientKey = (e) => {
-    if (["Enter", ",", " "].includes(e.key)) {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
-      addBCCRecipient(bccRecipientInput);
+
+      if (isValidEmail(bccRecipientInput)) {
+        addBCCRecipient(bccRecipientInput);
+      }
+    }
+
+    if (e.key === "Tab") {
+      if (isValidEmail(bccRecipientInput)) {
+        addBCCRecipient(bccRecipientInput);
+      }
     }
   };
 
@@ -213,6 +241,10 @@ const EmailFormCard = ({
     },
   });
 
+  const isValidEmail = (email) => {
+    return isEmail(email);
+  };
+
   return (
     <div className="bg-white rounded-2xl border border-slate-100 overflow-y-scroll h-full shadow-sm">
       {/* Header */}
@@ -262,6 +294,7 @@ const EmailFormCard = ({
           label="To"
           disabled={sending}
           recipients={recipients}
+          setRecipients={setRecipients} // 🔥 ADD THIS
           removeRecipient={removeRecipient}
           recipientInput={recipientInput}
           setRecipientInput={setRecipientInput}
@@ -286,6 +319,7 @@ const EmailFormCard = ({
               variant="secondary"
               disabled={sending}
               recipients={ccRecipients}
+              setRecipients={setCCRecipients}
               removeRecipient={removeCCRecipient}
               recipientInput={ccRecipientInput}
               setRecipientInput={setCCRecipientInput}
@@ -297,6 +331,7 @@ const EmailFormCard = ({
               variant="secondary"
               disabled={sending}
               recipients={bccRecipients}
+              setRecipients={setBCCRecipients}
               removeRecipient={removeBCCRecipient}
               recipientInput={bccRecipientInput}
               setRecipientInput={setBCCRecipientInput}
