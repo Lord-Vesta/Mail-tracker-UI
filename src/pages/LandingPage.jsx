@@ -59,11 +59,11 @@ const LandingPage = () => {
 
   const onSignup = () => {
     navigate("/signup");
-  };  
+  };
 
   const onLogin = () => {
     navigate("/login");
-  }
+  };
 
   return (
     <div
@@ -113,7 +113,7 @@ const LandingPage = () => {
               letterSpacing: "-0.02em",
             }}
           >
-            Outreach
+            Mail Tracker
           </span>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -715,6 +715,42 @@ const LandingPage = () => {
           >
             Create your free account <FiArrowRight size={16} />
           </button>
+        </div>
+      </div>
+      {/* Footer */}
+
+      <div
+        style={{
+          borderTop: "1px solid rgba(255,255,255,0.08)",
+          padding: "20px 40px",
+          textAlign: "center",
+          color: "#64748b",
+          fontSize: 13,
+        }}
+      >
+        <span>© {new Date().getFullYear()} Mail Tracker</span>
+
+        <div style={{ marginTop: 8 }}>
+          <a
+            href="/privacy"
+            style={{
+              color: "#818cf8",
+              marginRight: 16,
+              textDecoration: "none",
+            }}
+          >
+            Privacy Policy
+          </a>
+
+          <a
+            href="/terms"
+            style={{
+              color: "#818cf8",
+              textDecoration: "none",
+            }}
+          >
+            Terms of Service
+          </a>
         </div>
       </div>
     </div>

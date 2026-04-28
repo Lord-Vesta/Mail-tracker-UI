@@ -54,7 +54,7 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/termsOfService",
+    path: "/terms",
     element: (
       <PublicRoute>
         <TermsOfService />
