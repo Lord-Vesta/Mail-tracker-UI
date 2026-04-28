@@ -40,27 +40,47 @@ const SentEmailsCard = ({ setTab }) => {
     init();
   }, [accounts, handleGetSentEmails]);
 
-  const filtered = emails.filter((m) => {
+  const filtered = emails.filter((thread) => {
     const q = search.toLowerCase();
-    const toEmails = (m.to || []).join(", ").toLowerCase();
+
+    const lastMessage = thread.messages?.[thread.messages.length - 1] || {};
+
+    const toEmails = (lastMessage.to || []).join(", ").toLowerCase();
+
     return (
-      (statusFilter === "All" || m.status === statusFilter) &&
-      (toEmails.includes(q) || (m.subject || "").toLowerCase().includes(q))
+      (statusFilter === "All" ||
+        (lastMessage.isReplied ? "Replied" : "Sent") === statusFilter) &&
+      (toEmails.includes(q) ||
+        (lastMessage.subject || "").toLowerCase().includes(q))
     );
   });
 
-  const formattedEmails = filtered.map((m) => {
-    const email = (m.to || [])[0] || "";
+  const formattedEmails = filtered.map((thread) => {
+
+    const messages = thread.messages || [];
+    const lastMessage = messages[messages.length - 1] || {};
+
+    const email = (lastMessage.to || [])[0] || "";
+
     const name = email
       .split("@")[0]
       .replace(/[._]/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
+
     return {
-      ...m,
+      threadId: thread.threadId,
       name,
       email,
-      message: m.preview || m.subject,
-      date: new Date(m.sentAt).toLocaleDateString(),
+      preview: lastMessage.preview || "",
+      subject: lastMessage.subject || "",
+      status: thread.isReplied ? "Replied" : "Sent",
+      date: new Date(thread.lastActivityAt).toLocaleDateString(),
+      openCount: lastMessage.opensCount || 0,
+      clicksCount: thread.totalClicks || 0,
+      messages: messages,
+      followUpCount: messages.filter((m) => m.type === "followup").length,
+      replies: thread.replies,
+      isReplied: messages.some((m) => m.type === "reply"),
     };
   });
 

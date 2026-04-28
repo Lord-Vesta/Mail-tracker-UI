@@ -5,10 +5,11 @@ import { userContext } from "../../../context/userContext.js";
 
 const DraftPicker = ({
   setSubject,
-  setBody,
+
   setShowDraftPicker,
   addFiles,
   setDraftId,
+  editor,
 }) => {
   const [drafts, setDrafts] = useState([]);
 
@@ -27,6 +28,7 @@ const DraftPicker = ({
         subject: d.subject,
         body: d.textBody,
         attachments: d.attachments || [],
+        htmlBody: d.htmlBody,
       }));
 
       setDrafts(formatted);
@@ -44,6 +46,32 @@ const DraftPicker = ({
     init();
   }, [accounts, fetchDrafts]);
 
+  const htmlToText = (html = "") => {
+    return (
+      html
+        // remove images (tracking pixel etc.)
+        .replace(/<img[^>]*>/gi, "")
+
+        // remove gmail quoted replies
+        .split("gmail_quote")[0]
+        // convert line breaks
+        .replace(/<br\s*\/?>/gi, "\n")
+
+        // convert paragraphs to spacing
+        .replace(/<\/p>/gi, "\n\n")
+
+        // remove all remaining tags
+        .replace(/<[^>]+>/g, "")
+
+        // decode HTML entities (like &nbsp;)
+        .replace(/&nbsp;/g, " ")
+
+        // cleanup extra spaces/newlines
+        .replace(/\n{3,}/g, "\n\n")
+        .trim()
+    );
+  };
+
   return (
     <div className="px-[22px] py-[14px] bg-[#f8faff] border-b border-slate-200">
       <p className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em] mb-[9px]">
@@ -56,7 +84,11 @@ const DraftPicker = ({
             key={i}
             onClick={() => {
               setSubject(d.subject);
-              setBody(d.body);
+
+              if (editor && d.htmlBody) {
+                editor.commands.setContent(d.htmlBody);
+              }
+
               setShowDraftPicker(false);
               addFiles(d.attachments);
               setDraftId(d.id);

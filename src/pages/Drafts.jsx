@@ -76,7 +76,7 @@ const Drafts = () => {
     setIsSaving(true); // ← start
     try {
       const formData = new FormData();
-      const htmlBody = convertToHtml(body);
+      const htmlBody = document.querySelector("[contenteditable]")?.innerHTML;
       formData.append("title", title);
       formData.append("subject", subject);
       formData.append("body", htmlBody);
@@ -137,6 +137,7 @@ const Drafts = () => {
         title: d.title,
         subject: d.subject,
         body: d.htmlBody,
+        body_preview: d.bodyPreview,
         attachments: d.attachments || [],
       }));
       setDrafts(formatted);
@@ -151,6 +152,7 @@ const Drafts = () => {
   useEffect(() => {
     if (accounts?.length) fetchDrafts();
   }, [accounts, fetchDrafts]);
+
 
   return (
     <div className="flex flex-col gap-4 h-full">
@@ -219,10 +221,9 @@ const Drafts = () => {
                       {row.subject}
                     </td>
                     <td className="px-[18px] py-[14px] text-slate-500 max-w-[280px]">
-                      <span
-                        className="block truncate max-w-[260px]"
-                        dangerouslySetInnerHTML={{ __html: row.body }}
-                      />
+                      <span className="block truncate max-w-[260px]">
+                        {row.body_preview}
+                      </span>
                     </td>
                     <td className="px-[18px] py-[14px]">
                       {row.attachments?.length > 0 ? (

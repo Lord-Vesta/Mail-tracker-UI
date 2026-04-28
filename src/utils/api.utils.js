@@ -11,6 +11,9 @@ const {
   GET_FOLLOWUPS,
   CHECK_REPLIES,
   DELETE_DRAFT,
+  SEND_FOLLOWUP,
+  SEND_OTP,
+  VERIFY_OTP,
 } = apiConfig;
 
 export const signupUser = async (userData) => {
@@ -204,5 +207,36 @@ export const updateFollowUpStatusApi = async (followUpId, action) => {
     return response.data;
   } catch (error) {
     throw error?.response?.data?.message || "Failed to update follow-up status";
+  }
+};
+
+export const sendFollowupApi = async (emailData) => {
+  try {
+    const response = await axiosclient.post(SEND_FOLLOWUP, emailData, {
+      headers: {
+        "Content-Type": "application/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to send follow-up";
+  }
+};
+
+export const sendOTPApi = async (email) => {
+  try {
+    const response = await axiosclient.post(SEND_OTP, { email });
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to send OTP";
+  }
+};
+
+export const verifyOTPApi = async (email, otp) => {
+  try {
+    const response = await axiosclient.post(VERIFY_OTP, { email, otp });
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to verify OTP";
   }
 };

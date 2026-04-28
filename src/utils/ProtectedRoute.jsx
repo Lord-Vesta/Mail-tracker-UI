@@ -4,7 +4,7 @@ import { isAuthenticated } from "./auth.js";
 
 const ProtectedRoute = ({ children }) => {
   if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/landing" replace />;
   }
 
   return children;

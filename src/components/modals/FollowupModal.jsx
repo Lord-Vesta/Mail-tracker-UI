@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import {
   FiEdit3,
   FiChevronDown,
@@ -17,8 +17,10 @@ import {
 import DraftPicker from "../email/compose email/DraftPicker.jsx";
 import { convertToHtml } from "../../utils/fileUtils.js";
 import { userContext } from "../../context/userContext.js";
-import { sendEmail } from "../../utils/api.utils.js";
+import { sendFollowupApi } from "../../utils/api.utils.js";
 import { toast } from "react-toastify";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 const DAY_MS = 86400000;
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
@@ -115,7 +117,7 @@ const FollowupModal = ({ lead, onClose }) => {
       size: f.size,
       mimeType: f.mimeType,
     }));
-    setAttachments((p) => [...p, ...nf]);
+    setAttachments(nf);
   };
 
   const validateAndAddFiles = (files) => {
@@ -185,7 +187,8 @@ const FollowupModal = ({ lead, onClose }) => {
   };
 
   const sendFollowUp = async () => {
-    if (!subject.trim() || !message.trim()) return;
+    const html = editor?.getHTML();
+    if (!subject.trim() || !editor?.getText().trim()) return;
     setSending(true);
     try {
       const html = convertToHtml(message);
@@ -193,11 +196,7 @@ const FollowupModal = ({ lead, onClose }) => {
 
       formData.append("gmailAccountId", accounts?.[0]?.gmailAccountId);
       formData.append("userId", accounts?.[0]?.id);
-      formData.append("subject", subject);
       formData.append("body", html);
-      formData.append("to", JSON.stringify(lead.to));
-      formData.append("cc", JSON.stringify(lead.cc || []));
-      formData.append("bcc", JSON.stringify(lead.bcc || []));
 
       if (draftId) formData.append("draftId", draftId);
 
@@ -211,7 +210,7 @@ const FollowupModal = ({ lead, onClose }) => {
         .map((a) => a.file);
       newFiles.forEach((file) => formData.append("files", file));
 
-      await sendEmail(formData);
+      await sendFollowupApi(formData);
       setSentSuccess(true);
       setTimeout(() => onClose(), 1500);
     } catch (error) {
@@ -224,6 +223,22 @@ const FollowupModal = ({ lead, onClose }) => {
   const fld =
     "w-full border border-slate-200 rounded-md px-3 py-2 text-sm outline-none focus:border-indigo-500";
 
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: message || "",
+
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      setMessage(html);
+    },
+
+    editorProps: {
+      attributes: {
+        class: "w-full px-3 py-2 text-sm min-h-[150px] outline-none",
+      },
+    },
+  });
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm overflow-y-auto"
@@ -231,7 +246,7 @@ const FollowupModal = ({ lead, onClose }) => {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-[560px] bg-white rounded-xl overflow-hidden shadow-2xl my-6"
+        className="w-full max-w-[640px] bg-white rounded-[20px] overflow-hidden shadow-[0_32px_80px_rgba(15,23,42,0.18)] border border-slate-100 flex flex-col max-h-[90vh]"
       >
         {/* HEADER */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
@@ -293,20 +308,21 @@ const FollowupModal = ({ lead, onClose }) => {
           </p>
         </div>
 
-        {/* FORM — DraftPicker lives inside scroll container */}
         <div className="px-6 py-5 flex flex-col gap-4 max-h-[600px] overflow-y-auto">
-          {/* DRAFT PICKER — inside scroll so it doesn't push outside screen */}
           {showDraftPicker && (
             <DraftPicker
               setSubject={setSubject}
-              setBody={setMessage}
+              setBody={(html) => {
+                setMessage(html);
+                editor?.commands.setContent(html);
+              }}
               setShowDraftPicker={setShowDraftPicker}
               addFiles={addDraftFiles}
               setDraftId={setDraftId}
+              editor={editor}
             />
           )}
 
-          {/* Subject */}
           <div>
             <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
               Subject
@@ -320,19 +336,32 @@ const FollowupModal = ({ lead, onClose }) => {
             />
           </div>
 
-          {/* Message */}
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-              Message
-            </label>
-            <textarea
-              rows={7}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              disabled={sending}
-              className={`${fld} resize-none leading-relaxed disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50`}
-              placeholder="Enter your message"
-            />
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                Message
+              </label>
+              <div className="border border-slate-200 rounded-md overflow-hidden">
+                <div className="flex gap-1 p-2 bg-slate-50 border-b border-slate-200">
+                  <button
+                    onClick={() => editor?.chain().focus().toggleBold().run()}
+                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                  >
+                    B
+                  </button>
+
+                  <button
+                    onClick={() => editor?.chain().focus().toggleItalic().run()}
+                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                  >
+                    I
+                  </button>
+                </div>
+
+                {/* Editor */}
+                <EditorContent editor={editor} />
+              </div>
+            </div>
             <p className="text-right text-xs text-slate-300 mt-1">
               {message.length} chars
             </p>

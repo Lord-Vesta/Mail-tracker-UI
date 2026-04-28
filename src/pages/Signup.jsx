@@ -6,11 +6,13 @@ import {
   FiUser,
   FiMail,
   FiLock,
+  FiRefreshCw,
 } from "react-icons/fi";
 import AuthLayout from "../layouts/AuthLayout.jsx";
+import EmailVerificationPage from "./EmailVerificationPage.jsx";
 import { useNavigate } from "react-router-dom";
 import { userContext } from "../context/userContext.js";
-import { signupUser } from "../utils/api.utils.js";
+import { signupUser, sendOTPApi, verifyOTPApi } from "../utils/api.utils.js";
 import { toast } from "react-toastify";
 
 const token = {
@@ -31,8 +33,6 @@ const token = {
 };
 
 const css = `
- 
-
   * { box-sizing: border-box; }
 
   .sp-root { font-family: 'DM Sans', sans-serif; }
@@ -163,6 +163,9 @@ const css = `
     font-weight: 500;
   }
 
+  @keyframes lp-spin { to { transform: rotate(360deg); } }
+  .lp-spin { animation: lp-spin 0.75s linear infinite; }
+
   .sp-checkbox {
     width: 18px; height: 18px;
     border-radius: 6px;
@@ -188,36 +191,83 @@ const css = `
   }
 `;
 
-/* ─── component ─────────────────────────────────────────────── */
 const SignupPage = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [agreed, setAgreed] = useState(false);
 
-  const { setActive } = useContext(userContext);
+  // Email verification states
+  const [showVerification, setShowVerification] = useState(false);
+  const [tempUserData, setTempUserData] = useState(null);
 
+  const { setActive } = useContext(userContext);
   const navigate = useNavigate();
 
   const onSignup = async () => {
+    setLoading(true);
     try {
-      const result = await signupUser({
+      // ✅ Step 1: Send OTP FIRST
+      await sendOTPApi(email.trim());
+
+      // ✅ Store user data temporarily (NOT token)
+      setTempUserData({
         name: name.trim(),
         email: email.trim(),
         password: password.trim(),
       });
+
+      // ✅ Show OTP screen
+      setShowVerification(true);
+
+      toast.success("OTP sent to your email");
+    } catch (error) {
+      toast.error(error.message || "Failed to send OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (email, otpCode) => {
+    try {
+      // Verify OTP with backend
+      await verifyOTPApi(email, otpCode);
+      return true;
+    } catch (error) {
+      throw new Error(error.message || "Invalid OTP");
+    }
+  };
+
+  const handleResendOTP = async (email) => {
+    try {
+      await sendOTPApi(email);
+    } catch (error) {
+      throw new Error(error.message || "Failed to resend OTP");
+    }
+  };
+
+  const handleVerificationSuccess = async () => {
+    try {
+      // ✅ NOW create account AFTER OTP verification
+      const result = await signupUser(tempUserData);
+
       localStorage.setItem("token", result.data);
+
+      // cleanup
       setName("");
       setEmail("");
       setPassword("");
       setAgreed(false);
+      setShowVerification(false);
+      setTempUserData(null);
+
       navigate("/");
       setActive("dashboard");
     } catch (error) {
-      toast.error(error || "Signup failed. Please try again.");
+      toast.error("Signup failed after verification");
     }
   };
 
@@ -226,7 +276,12 @@ const SignupPage = () => {
   };
 
   const onBack = () => {
-    navigate(-1);
+    if (showVerification) {
+      setShowVerification(false);
+      setTempUserData(null);
+    } else {
+      navigate(-1);
+    }
   };
 
   const validate = () => {
@@ -255,6 +310,19 @@ const SignupPage = () => {
           : 3;
   const strengthLabel = ["", "Weak", "Fair", "Strong"];
   const strengthColor = ["", token.red, token.amber, token.green];
+
+  // Show verification page if in verification mode
+  if (showVerification && tempUserData) {
+    return (
+      <EmailVerificationPage
+        email={tempUserData.email}
+        onBack={onBack}
+        onVerificationSuccess={handleVerificationSuccess}
+        onResendOTP={handleResendOTP}
+        onVerifyOTP={handleVerifyOTP}
+      />
+    );
+  }
 
   return (
     <AuthLayout onBack={onBack}>
@@ -438,9 +506,24 @@ const SignupPage = () => {
           <button
             className="sp-submit"
             onClick={submit}
+            disabled={loading}
             style={{ marginTop: 6 }}
           >
-            "Create account →"
+            {loading ? (
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 9,
+                }}
+              >
+                <FiRefreshCw size={14} className="lp-spin" />
+                Creating account
+              </span>
+            ) : (
+              "Create account →"
+            )}
           </button>
         </div>
 

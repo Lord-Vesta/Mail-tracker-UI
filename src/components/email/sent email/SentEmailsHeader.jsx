@@ -40,24 +40,6 @@ const SentEmailsHeader = ({
           />
         </div>
 
-        {/* Filter */}
-        <div className="relative flex items-center">
-          <FiFilter
-            size={12}
-            className="absolute left-[9px] text-slate-400 pointer-events-none"
-          />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            disabled={isLoading}
-            className="border border-slate-200 rounded-[9px] pl-[27px] pr-[12px] py-[6px] text-[12.5px] text-slate-700 bg-slate-50 outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {STATUSES.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-
         <button
           onClick={() => setTab("compose")}
           className="inline-flex items-center gap-[7px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold bg-indigo-500 text-white transition hover:bg-indigo-600 hover:-translate-y-[1px] hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]"
