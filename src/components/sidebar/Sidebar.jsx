@@ -42,10 +42,10 @@ const Sidebar = () => {
           </div>
 
           <div>
-            <p className="text-sm font-bold text-slate-100">Outreach</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+            <p className="text-sm font-bold text-slate-100">Mail Tracker</p>
+            {/* <p className="text-[10px] text-slate-500 uppercase tracking-wider">
               Manager
-            </p>
+            </p> */}
           </div>
         </div>
       </div>

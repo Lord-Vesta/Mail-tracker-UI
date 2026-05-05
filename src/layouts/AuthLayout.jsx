@@ -97,7 +97,7 @@ const AuthLayout = ({ children, onBack }) => (
             letterSpacing: "-0.02em",
           }}
         >
-          Outreach
+          Mail Tracker
         </span>
       </div>
 

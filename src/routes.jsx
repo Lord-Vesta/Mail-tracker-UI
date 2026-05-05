@@ -13,6 +13,7 @@ import ProtectedRoute from "./utils/ProtectedRoute.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import PrivacyPolicy from "./pages/PrivacyPolicyPage.jsx";
 import TermsOfService from "./pages/TermsOfServicePage.jsx";
+import OAuthSuccess from "./utils/OAuthSuccess.jsx";
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,10 @@ export const router = createBrowserRouter([
         <TermsOfService />
       </PublicRoute>
     ),
+  },
+  {
+    path: "/oauth-success",
+    element: <OAuthSuccess />,
   },
 
   // 🔒 Protected
