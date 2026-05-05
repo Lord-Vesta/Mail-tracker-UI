@@ -43,20 +43,33 @@ const SentEmailsCard = ({ setTab }) => {
   const filtered = emails.filter((thread) => {
     const q = search.toLowerCase();
 
-    const lastMessage = thread.messages?.[thread.messages.length - 1] || {};
+    const messages = thread.messages || [];
+    const lastMessage = messages[messages.length - 1] || {};
 
     const toEmails = (lastMessage.to || []).join(", ").toLowerCase();
 
+    const hasReply = messages.some((m) => m.type === "reply");
+    const hasFollowUp = messages.some((m) => m.type === "followup");
+    const hasClicks = (thread.totalClicks || 0) > 0;
+
+    const isHotLead = hasClicks && !hasReply;
+
+    const matchesFilter =
+      statusFilter === "All" ||
+      (statusFilter === "Sent" && !hasReply) ||
+      (statusFilter === "Replied" && hasReply) ||
+      (statusFilter === "Follow-ups" && hasFollowUp) ||
+      (statusFilter === "Clicked" && hasClicks) ||
+      (statusFilter === "Hot Leads" && isHotLead);
+
     return (
-      (statusFilter === "All" ||
-        (lastMessage.isReplied ? "Replied" : "Sent") === statusFilter) &&
+      matchesFilter &&
       (toEmails.includes(q) ||
         (lastMessage.subject || "").toLowerCase().includes(q))
     );
   });
 
   const formattedEmails = filtered.map((thread) => {
-
     const messages = thread.messages || [];
     const lastMessage = messages[messages.length - 1] || {};
 
@@ -66,6 +79,10 @@ const SentEmailsCard = ({ setTab }) => {
       .split("@")[0]
       .replace(/[._]/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
+    let status = "Sent";
+    if (thread.totalClicks > 0) status = "Clicked";
+    if (messages.some((m) => m.type === "followup")) status = "Follow-up";
+    if (messages.some((m) => m.type === "reply")) status = "Replied";
 
     return {
       threadId: thread.threadId,
@@ -73,7 +90,7 @@ const SentEmailsCard = ({ setTab }) => {
       email,
       preview: lastMessage.preview || "",
       subject: lastMessage.subject || "",
-      status: thread.isReplied ? "Replied" : "Sent",
+      status: status,
       date: new Date(thread.lastActivityAt).toLocaleDateString(),
       openCount: lastMessage.opensCount || 0,
       clicksCount: thread.totalClicks || 0,

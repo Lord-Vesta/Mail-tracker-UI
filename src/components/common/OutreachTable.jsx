@@ -4,6 +4,7 @@ import {
   FiMousePointer,
   FiCornerUpLeft,
   FiRepeat,
+  FiTrendingUp,
 } from "react-icons/fi";
 import { statusConfig } from "../../utils/statusConfig.jsx";
 // import { FiReply } from "react-icons/fi";
@@ -157,6 +158,13 @@ const OutreachTable = ({
                           <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-indigo-100 text-indigo-700 flex items-center gap-[4px]">
                             <FiRepeat size={10} />
                             {row.followUpCount}
+                          </span>
+                        )}
+                        {/* Hot Lead badge */}
+                        {row.clicksCount > 0 && !row.isReplied && (
+                          <span className="text-[10px] font-semibold px-[7px] py-[3px] rounded-full bg-red-50 text-red-600 flex items-center gap-[4px]">
+                            <FiTrendingUp size={10} />
+                            Hot
                           </span>
                         )}
                       </div>

@@ -56,8 +56,6 @@ const LandingPage = () => {
     { value: "100%", label: "Replies tracked in inbox" },
   ];
 
-  const navigate = useNavigate();
-
   const handleGoogleAuth = () => {
     window.location.href = `${import.meta.env.VITE_BACKEND_URL}api/auth/googleSignin`;
   };
@@ -256,7 +254,7 @@ const LandingPage = () => {
             margin: "0 auto 40px",
           }}
         >
-          Outreach Manager helps you send cold emails at scale, track replies,
+          MailTracker helps you send cold emails at scale, track replies,
           manage followups, and monitor outreach performance — all from one
           dashboard.
         </p>
