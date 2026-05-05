@@ -1,4 +1,5 @@
 import React from "react";
+import { FcGoogle } from "react-icons/fc";
 import {
   FiSend,
   FiClock,
@@ -57,12 +58,8 @@ const LandingPage = () => {
 
   const navigate = useNavigate();
 
-  const onSignup = () => {
-    navigate("/signup");
-  };
-
-  const onLogin = () => {
-    navigate("/login");
+  const handleGoogleAuth = () => {
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}api/auth/googleSignin`;
   };
 
   return (
@@ -78,6 +75,64 @@ const LandingPage = () => {
         @keyframes floatA { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-12px) rotate(3deg)} }
         @keyframes floatB { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-8px) rotate(-2deg)} }
         @keyframes fadeSlideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+        
+        /* Google Button Styles - Official Google Design */
+        .google-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 13px 28px;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 600;
+          border: 1px solid #dadce0;
+          background: #ffffff;
+          color: #3c4043;
+          cursor: pointer;
+          font-family: 'DM Sans,sans-serif';
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .google-btn:hover {
+          background: #f8f9fa;
+          border-color: #dadce0;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+          transform: translateY(-1px);
+        }
+
+        .google-btn:active {
+          background: #f8f9fa;
+          border-color: #4285f4;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          transform: translateY(0);
+        }
+
+        .google-btn-navbar {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 8px 16px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          border: 1px solid #dadce0;
+          background: #ffffff;
+          color: #3c4043;
+          cursor: pointer;
+          font-family: 'DM Sans,sans-serif';
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .google-btn-navbar:hover {
+          background: #f8f9fa;
+          border-color: #dadce0;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+          transform: translateY(-1px);
+        }
       `}</style>
 
       {/* Navbar */}
@@ -117,54 +172,9 @@ const LandingPage = () => {
           </span>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button
-            onClick={onLogin}
-            style={{
-              padding: "8px 20px",
-              borderRadius: 10,
-              fontSize: 13,
-              fontWeight: 600,
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: "transparent",
-              color: "#e2e8f0",
-              cursor: "pointer",
-              fontFamily: "DM Sans,sans-serif",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "rgba(255,255,255,0.07)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "transparent")
-            }
-          >
+          <button onClick={handleGoogleAuth} className="google-btn-navbar">
+            <FcGoogle size={16} />
             Sign in
-          </button>
-          <button
-            onClick={onSignup}
-            style={{
-              padding: "8px 20px",
-              borderRadius: 10,
-              fontSize: 13,
-              fontWeight: 700,
-              border: "none",
-              background: "linear-gradient(135deg,#6366f1,#818cf8)",
-              color: "#fff",
-              cursor: "pointer",
-              fontFamily: "DM Sans,sans-serif",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-1px)";
-              e.currentTarget.style.boxShadow =
-                "0 6px 20px rgba(99,102,241,0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "none";
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          >
-            Get started free
           </button>
         </div>
       </nav>
@@ -259,62 +269,9 @@ const LandingPage = () => {
             flexWrap: "wrap",
           }}
         >
-          <button
-            onClick={onSignup}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "13px 28px",
-              borderRadius: 12,
-              fontSize: 15,
-              fontWeight: 700,
-              border: "none",
-              background: "linear-gradient(135deg,#6366f1,#818cf8)",
-              color: "#fff",
-              cursor: "pointer",
-              fontFamily: "DM Sans,sans-serif",
-              transition: "all 0.2s",
-              boxShadow: "0 4px 20px rgba(99,102,241,0.35)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow =
-                "0 8px 28px rgba(99,102,241,0.45)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "none";
-              e.currentTarget.style.boxShadow =
-                "0 4px 20px rgba(99,102,241,0.35)";
-            }}
-          >
-            Start for free <FiArrowRight size={16} />
-          </button>
-          <button
-            onClick={onLogin}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "13px 28px",
-              borderRadius: 12,
-              fontSize: 15,
-              fontWeight: 600,
-              border: "1px solid rgba(255,255,255,0.15)",
-              background: "rgba(255,255,255,0.05)",
-              color: "#e2e8f0",
-              cursor: "pointer",
-              fontFamily: "DM Sans,sans-serif",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "rgba(255,255,255,0.05)")
-            }
-          >
-            Sign in to your account
+          <button onClick={handleGoogleAuth} className="google-btn">
+            <FcGoogle size={20} />
+            Continue with Google
           </button>
         </div>
       </div>
@@ -462,12 +419,12 @@ const LandingPage = () => {
             marginBottom: 36,
           }}
         >
-          Sign up to unlock the full platform.
+          Sign in with Google to unlock the full platform.
         </p>
         <div
           style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
         >
-          {/* Logged-out */}
+          {/* Without account */}
           <div
             style={{
               background: "rgba(255,255,255,0.03)",
@@ -686,34 +643,9 @@ const LandingPage = () => {
             Start managing your cold email outreach, replies, and followups from
             one place.
           </p>
-          <button
-            onClick={onSignup}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "13px 32px",
-              borderRadius: 12,
-              fontSize: 15,
-              fontWeight: 700,
-              border: "none",
-              background: "linear-gradient(135deg,#6366f1,#818cf8)",
-              color: "#fff",
-              cursor: "pointer",
-              fontFamily: "DM Sans,sans-serif",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow =
-                "0 8px 28px rgba(99,102,241,0.4)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "none";
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          >
-            Create your free account <FiArrowRight size={16} />
+          <button onClick={handleGoogleAuth} className="google-btn">
+            <FcGoogle size={20} />
+            Create your free account
           </button>
         </div>
       </div>
