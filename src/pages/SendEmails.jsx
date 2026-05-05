@@ -10,7 +10,7 @@ const SendEmails = () => {
       <div className="flex border-b-2 border-slate-100 mb-[20px]">
         {[
           ["compose", "Compose Email", <FiEdit3 size={14} />],
-          ["sent", "Sent Emails", <FiInbox size={14} />],
+          ["sent", "Conversations", <FiInbox size={14} />],
         ].map(([key, label, icon]) => (
           <button
             key={key}

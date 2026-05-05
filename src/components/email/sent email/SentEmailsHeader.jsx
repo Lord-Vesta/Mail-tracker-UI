@@ -1,6 +1,6 @@
 import { FiSearch, FiFilter, FiPlus, FiRefreshCw } from "react-icons/fi";
 
-const STATUSES = ["All", "Sent", "Opened", "Replied", "Bounced"];
+const STATUSES = ["All", "Replied", "Follow-ups", "Clicked","Hot Leads"];
 
 const SentEmailsHeader = ({
   filtered,
@@ -38,6 +38,21 @@ const SentEmailsHeader = ({
             disabled={isLoading}
             className="bg-transparent outline-none text-[12.5px] text-slate-700 w-[150px] disabled:cursor-not-allowed disabled:opacity-50"
           />
+        </div>
+        <div className="flex items-center gap-[7px] border border-slate-200 rounded-[9px] px-[10px] py-[6px] bg-slate-50">
+          <FiFilter size={13} className="text-slate-400" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            disabled={isLoading}
+            className="bg-transparent outline-none text-[12.5px] text-slate-700 cursor-pointer"
+          >
+            {STATUSES.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
         </div>
 
         <button
