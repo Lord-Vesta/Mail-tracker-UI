@@ -11,6 +11,7 @@ import {
 } from "../utils/api.utils.js";
 import { userContext } from "../context/userContext.js";
 import { toast } from "react-toastify";
+import { FaLongArrowAltRight } from "react-icons/fa";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -156,9 +157,9 @@ const Dashboard = () => {
             </h2>
             <button
               onClick={() => navigate("/send_mail")}
-              className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
+              className="hover:cursor-pointer flex items-center justify-center gap-[5px] text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
             >
-              View all →
+              View all <FaLongArrowAltRight />
             </button>
           </div>
           <OutreachTable

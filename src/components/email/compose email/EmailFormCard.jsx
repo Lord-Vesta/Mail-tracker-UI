@@ -261,7 +261,7 @@ const EmailFormCard = ({
         <button
           onClick={() => setShowDraftPicker((v) => !v)}
           disabled={sending}
-          className={`flex items-center gap-[6px] px-[12px] py-[6px] rounded-[9px] text-[12px] font-semibold border transition disabled:opacity-50 disabled:cursor-not-allowed
+          className={`hover:cursor-pointer flex items-center gap-[6px] px-[12px] py-[6px] rounded-[9px] text-[12px] font-semibold border transition disabled:opacity-50 disabled:cursor-not-allowed
           ${
             showDraftPicker
               ? "bg-indigo-500 border-indigo-500 text-white"

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { FiPaperclip, FiFile, FiX } from "react-icons/fi";
+import { FiPaperclip, FiFile, FiX, FiDownload } from "react-icons/fi";
 import { formatBytes, isImg } from "../../utils/fileUtils.js";
 
 const AttachmentZone = ({ attachments, onChange }) => {
@@ -11,6 +11,19 @@ const AttachmentZone = ({ attachments, onChange }) => {
       (f) => !attachments.find((a) => a.name === f.name && a.size === f.size),
     );
     onChange([...attachments, ...nf]);
+  };
+
+  const downloadFile = async (file) => {
+    const response = await fetch(file.url);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = file.filename || file.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   };
 
   return (
@@ -85,15 +98,30 @@ const AttachmentZone = ({ attachments, onChange }) => {
                 </p>
               </div>
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChange(attachments.filter((_, j) => j !== i));
-                }}
-                className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 text-slate-400 hover:text-red-500 p-1 rounded-md"
-              >
-                <FiX size={13} />
-              </button>
+              <div className="flex items-center gap-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                {/* Download */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    downloadFile(f);
+                  }}
+                  className="p-1.5 rounded-md text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 transition"
+                >
+                  <FiDownload size={13} />
+                </button>
+
+                {/* Remove */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChange(attachments.filter((_, j) => j !== i));
+                  }}
+                  className="p-1.5 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition"
+                  title="Remove"
+                >
+                  <FiX size={13} />
+                </button>
+              </div>
             </li>
           ))}
         </ul>

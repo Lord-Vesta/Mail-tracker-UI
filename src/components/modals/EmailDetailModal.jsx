@@ -14,6 +14,7 @@ import {
   FiTrash2,
   // FiReply,
   FiClock,
+  FiDownload,
 } from "react-icons/fi";
 import { sendFollowupApi } from "../../utils/api.utils.js";
 import { useContext, useRef, useState } from "react";
@@ -126,6 +127,26 @@ const ThreadItem = ({ item, hue }) => {
     return doc.body.innerHTML.trim();
   };
 
+  const downloadFile = async (file) => {
+    const response = await fetch(file.url);
+
+    const blob = await response.blob();
+
+    const url = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = file.filename;
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+
+    window.URL.revokeObjectURL(url);
+  };
+
   const getAvatarContent = () => {
     if (isIncoming) {
       return item.from?.[0]?.toUpperCase() || "U";
@@ -226,10 +247,28 @@ const ThreadItem = ({ item, hue }) => {
         <div className="mt-[10px]">
           <button
             onClick={() => setExpandedAttachments(!expandedAttachments)}
-            className="text-[11px] text-slate-500 font-medium mb-[6px]"
+            className="flex items-center gap-[6px] text-[11.5px] text-slate-500 font-medium mb-[6px]  transition"
           >
-            {item.attachmentsMeta.length} attachment
-            {item.attachmentsMeta.length > 1 ? "s" : ""}
+            <FiPaperclip size={12} />
+
+            <span>
+              {item.attachmentsMeta.length} attachment
+              {item.attachmentsMeta.length > 1 ? "s" : ""}
+            </span>
+
+            <span className="text-slate-300">•</span>
+
+            <div className="flex items-center justify-center gap-[6px] px-[8px] py-[2px] rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition">
+              <span>
+                {expandedAttachments ? "Hide files" : "Click to view"}
+              </span>
+
+              {expandedAttachments ? (
+                <FiChevronUp size={12} />
+              ) : (
+                <FiChevronDown size={12} />
+              )}
+            </div>
           </button>
 
           {expandedAttachments && (
@@ -243,14 +282,13 @@ const ThreadItem = ({ item, hue }) => {
                     {file.filename}
                   </p>
 
-                  <a
-                    href={file.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-500 text-[11px] font-medium"
+                  <button
+                    onClick={() => downloadFile(file)}
+                    className="p-[5px] rounded-md text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 transition"
+                    title="Download attachment"
                   >
-                    Download
-                  </a>
+                    <FiDownload size={13} />
+                  </button>
                 </div>
               ))}
             </div>

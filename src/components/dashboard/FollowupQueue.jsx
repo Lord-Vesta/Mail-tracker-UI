@@ -2,6 +2,7 @@ import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getFollowUpsApi } from "../../utils/api.utils.js";
 import { userContext } from "../../context/userContext.js";
+import { FaLongArrowAltRight } from "react-icons/fa";
 
 const SkeletonRow = () => (
   <div className="flex flex-col gap-[6px] py-[10px] border-b border-slate-50 animate-pulse">
@@ -16,7 +17,7 @@ const SkeletonRow = () => (
   </div>
 );
 
-const FollowupQueue = ({ openFollowupModal,refreshKey  }) => {
+const FollowupQueue = ({ openFollowupModal, refreshKey }) => {
   const navigate = useNavigate();
   const { accounts } = useContext(userContext);
   const [leads, setLeads] = useState([]);
@@ -49,7 +50,7 @@ const FollowupQueue = ({ openFollowupModal,refreshKey  }) => {
       await fetchFollowUps();
     };
     init();
-  }, [fetchFollowUps,refreshKey]);
+  }, [fetchFollowUps, refreshKey]);
 
   return (
     <div className="bg-white rounded-[14px] border border-slate-100 shadow-sm flex flex-col overflow-hidden">
@@ -60,9 +61,10 @@ const FollowupQueue = ({ openFollowupModal,refreshKey  }) => {
         </h2>
         <button
           onClick={() => navigate("/followups")}
-          className="text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
+          className="hover:cursor-pointer flex items-center justify-center gap-[5px] text-[11px] font-semibold text-indigo-600 hover:text-indigo-700"
         >
-          View all →
+          View all
+          <FaLongArrowAltRight />
         </button>
       </div>
 
@@ -139,9 +141,9 @@ const FollowupQueue = ({ openFollowupModal,refreshKey  }) => {
                     status: "Sent",
                   })
                 }
-                className="w-full text-[11px] font-bold rounded-md py-[5px] border border-indigo-200 bg-indigo-50 text-indigo-600 transition hover:bg-indigo-600 hover:text-white"
+                className="hover:cursor-pointer flex items-center justify-center gap-[5px] w-full text-[11px] font-bold rounded-md py-[5px] border border-indigo-200 bg-indigo-50 text-indigo-600 transition hover:bg-indigo-600 hover:text-white"
               >
-                Send Followup →
+                Send Followup <FaLongArrowAltRight />
               </button>
             </div>
           ))}

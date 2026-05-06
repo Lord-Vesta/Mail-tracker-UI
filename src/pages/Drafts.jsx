@@ -163,7 +163,7 @@ const Drafts = () => {
             reset();
             setModal(true);
           }}
-          className="flex items-center gap-[7px] px-[16px] py-[8px] rounded-[10px] text-[13px] font-semibold bg-indigo-500 text-white hover:bg-indigo-600 transition hover:-translate-y-[1px] hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]"
+          className="hover:cursor-pointer flex items-center gap-[7px] px-[16px] py-[8px] rounded-[10px] text-[13px] font-semibold bg-indigo-500 text-white hover:bg-indigo-600 transition hover:-translate-y-[1px] hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]"
         >
           <FiPlus size={14} />
           Create Draft
@@ -240,7 +240,7 @@ const Drafts = () => {
                       <button
                         onClick={(e) => handleDelete(e, row.id)}
                         disabled={deletingId === row.id}
-                        className="flex items-center justify-center w-[28px] h-[28px] rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition disabled:opacity-50 disabled:pointer-events-none"
+                        className="hover:cursor-pointer flex items-center justify-center w-[28px] h-[28px] rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 transition disabled:opacity-50 disabled:pointer-events-none"
                       >
                         {deletingId === row.id ? (
                           <FiRefreshCw
