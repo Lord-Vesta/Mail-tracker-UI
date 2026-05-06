@@ -93,7 +93,7 @@ const DraftPicker = ({
               addFiles(d.attachments);
               setDraftId(d.id);
             }}
-            className="flex items-start gap-[10px] bg-white border border-slate-200 rounded-[10px] px-[13px] py-[10px] hover:border-indigo-500 hover:bg-indigo-50 transition"
+            className="hover:cursor-pointer flex items-start gap-[10px] bg-white border border-slate-200 rounded-[10px] px-[13px] py-[10px] hover:border-indigo-500 hover:bg-indigo-50 transition"
           >
             <div className="w-[28px] h-[28px] rounded-[8px] bg-indigo-50 text-indigo-500 flex items-center justify-center">
               <FiEdit3 size={12} />

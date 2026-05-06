@@ -62,11 +62,17 @@ const FollowUpRow = ({ row, index, length, openCompose, setQueue }) => {
       await updateFollowUpStatusApi(row.followUpId || row.id, action);
 
       if (action === "dismiss") {
-        setQueue((q) => q.filter((x) => x.id !== row.id));
+        setQueue((q) =>
+          q.filter(
+            (x) => (x.followUpId || x.id) !== (row.followUpId || row.id),
+          ),
+        );
       } else {
         setQueue((q) =>
           q.map((x) =>
-            x.id === row.id ? { ...x, status: statusMap[action] } : x,
+            (x.followUpId || x.id) === (row.followUpId || row.id)
+              ? { ...x, status: statusMap[action] }
+              : x,
           ),
         );
       }

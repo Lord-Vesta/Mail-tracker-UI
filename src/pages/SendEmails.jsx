@@ -15,7 +15,7 @@ const SendEmails = () => {
           <button
             key={key}
             onClick={() => setTab(key)}
-            className={`flex items-center gap-[7px] px-[20px] pb-[10px] text-[13.5px] font-semibold border-b-2 transition
+            className={`hover:cursor-pointer flex items-center gap-[7px] px-[20px] pb-[10px] text-[13.5px] font-semibold border-b-2 transition
             ${
               tab === key
                 ? "border-indigo-500 text-indigo-500"

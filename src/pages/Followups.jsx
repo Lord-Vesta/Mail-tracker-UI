@@ -11,7 +11,6 @@ const Followups = () => {
   const [isLoadingQueue, setIsLoadingQueue] = useState(false);
   const { accounts } = useContext(userContext);
 
-  // ✅ FIXED COUNTS
   const counts = {
     Pending: queue.filter((x) => x.status === "Pending").length,
 

@@ -77,11 +77,11 @@ const AnalyticsCards = ({ kpi, onRefresh, isRefreshing = false }) => {
   return (
     <div className="flex flex-col gap-2 shrink-0">
       {/* Refresh button row */}
-      <div className="flex justify-end">
+      <div className="flex justify-end ">
         <button
           onClick={onRefresh}
           disabled={isRefreshing}
-          className="flex items-center gap-[6px] px-3 py-1.5 rounded-md border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="flex items-center gap-[6px] px-3 py-1.5 rounded-md border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 text-xs font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition hover:cursor-pointer"
         >
           <FiRefreshCw
             size={12}

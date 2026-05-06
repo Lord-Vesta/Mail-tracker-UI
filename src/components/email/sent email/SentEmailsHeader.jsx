@@ -57,7 +57,7 @@ const SentEmailsHeader = ({
 
         <button
           onClick={() => setTab("compose")}
-          className="inline-flex items-center gap-[7px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold bg-indigo-500 text-white transition hover:bg-indigo-600 hover:-translate-y-[1px] hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]"
+          className="hover:cursor-pointer inline-flex items-center gap-[7px] px-[14px] py-[6px] rounded-[10px] text-[13px] font-semibold bg-indigo-500 text-white transition hover:bg-indigo-600 hover:-translate-y-[1px] hover:shadow-[0_4px_12px_rgba(99,102,241,0.35)]"
         >
           <FiPlus size={13} /> Compose
         </button>

@@ -66,8 +66,7 @@ const FollowUpQueue = ({
     const matchF =
       filter === "All" ||
       (filter === "Pending" && x.status === "Pending") ||
-      (filter === "Snoozed" &&
-        x.status === "Stopped") ||
+      (filter === "Snoozed" && x.status === "Stopped") ||
       (filter === "Completed" && x.status === "Completed");
 
     const q = search.toLowerCase();
@@ -77,8 +76,7 @@ const FollowUpQueue = ({
 
     return (
       matchF &&
-      (email.toLowerCase().includes(q) ||
-        subject.toLowerCase().includes(q))
+      (email.toLowerCase().includes(q) || subject.toLowerCase().includes(q))
     );
   });
 
@@ -167,7 +165,7 @@ const FollowUpQueue = ({
         >
           {visible.map((row, i) => (
             <FollowUpRow
-              key={i}
+              key={row.followUpId || row.id}
               row={row}
               index={i}
               length={visible.length}

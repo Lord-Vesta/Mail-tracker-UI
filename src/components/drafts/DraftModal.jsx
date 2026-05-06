@@ -30,6 +30,9 @@ const DraftModal = ({
     }
   }, [modalMode]);
 
+  const isFormInvalid =
+    !title?.trim() || !subject?.trim() || !body || body === "<p></p>";
+
   const editor = useEditor({
     extensions: [StarterKit],
     content: body || "",
@@ -90,7 +93,7 @@ const DraftModal = ({
           <button
             onClick={close}
             disabled={isSaving}
-            className="p-[4px] rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="hover:cursor-pointer p-[4px] rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FiX size={16} />
           </button>
@@ -163,13 +166,13 @@ const DraftModal = ({
                 <div className="flex gap-1 p-2 bg-slate-50 border-b border-slate-200">
                   <button
                     onClick={() => editor?.chain().focus().toggleBold().run()}
-                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                    className="hover:cursor-pointer px-2 py-1 bg-white rounded hover:bg-indigo-50"
                   >
                     B
                   </button>
                   <button
                     onClick={() => editor?.chain().focus().toggleItalic().run()}
-                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                    className="hover:cursor-pointer px-2 py-1 bg-white rounded hover:bg-indigo-50"
                   >
                     I
                   </button>
@@ -213,13 +216,13 @@ const DraftModal = ({
               <>
                 <button
                   onClick={close}
-                  className="inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-medium border border-slate-200 rounded-[10px] text-slate-600 hover:bg-slate-50"
+                  className="hover:cursor-pointer inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-medium border border-slate-200 rounded-[10px] text-slate-600 hover:bg-slate-50"
                 >
                   Close
                 </button>
                 <button
                   onClick={() => setModalMode("edit")}
-                  className="inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-semibold rounded-[10px] bg-indigo-500 text-white hover:bg-indigo-600 transition"
+                  className="hover:cursor-pointer inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-semibold rounded-[10px] bg-indigo-500 text-white hover:bg-indigo-600 transition"
                 >
                   <FiEdit size={13} />
                   Edit Draft
@@ -230,15 +233,20 @@ const DraftModal = ({
                 <button
                   onClick={isEdit ? () => setModalMode("view") : close}
                   disabled={isSaving}
-                  className="inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-medium border border-slate-200 rounded-[10px] text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="hover:cursor-pointer inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-medium border border-slate-200 rounded-[10px] text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
 
                 <button
                   onClick={save}
-                  disabled={isSaving}
-                  className="inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-semibold rounded-[10px] bg-indigo-500 text-white hover:bg-indigo-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                  disabled={isSaving || isFormInvalid}
+                  className={`inline-flex items-center gap-[6px] px-[16px] py-[8px] text-[13px] font-semibold rounded-[10px] transition
+                    ${
+                      isSaving || isFormInvalid
+                        ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                        : "bg-indigo-500 text-white hover:bg-indigo-600 hover:cursor-pointer "
+                    }`}
                 >
                   {isSaving ? (
                     <>
