@@ -240,3 +240,15 @@ export const verifyOTPApi = async (email, otp) => {
     throw error?.response?.data?.message || "Failed to verify OTP";
   }
 };
+
+export const generateAIReplyApi = async (emailData) => {
+  try {
+    const response = await axiosclient.post(
+      apiConfig.GENERATE_AI_REPLY,
+      emailData,
+    );
+    return response.data;
+  } catch (error) {
+    throw error?.response?.data?.message || "Failed to generate AI reply";
+  }
+};

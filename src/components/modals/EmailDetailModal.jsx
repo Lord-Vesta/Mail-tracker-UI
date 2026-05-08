@@ -15,8 +15,9 @@ import {
   // FiReply,
   FiClock,
   FiDownload,
+  FiCpu,
 } from "react-icons/fi";
-import { sendFollowupApi } from "../../utils/api.utils.js";
+import { generateAIReplyApi, sendFollowupApi } from "../../utils/api.utils.js";
 import { useContext, useRef, useState } from "react";
 import { userContext } from "../../context/userContext.js";
 import { convertToHtml } from "../../utils/fileUtils.js";
@@ -115,7 +116,19 @@ const ThreadItem = ({ item, hue }) => {
       el.removeAttribute("style");
       el.removeAttribute("class");
 
-      if (tag !== "p" && tag !== "span" && tag !== "strong" && tag !== "b") {
+      if (
+        tag !== "p" &&
+        tag !== "span" &&
+        tag !== "strong" &&
+        tag !== "b" &&
+        tag !== "br" &&
+        tag !== "ul" &&
+        tag !== "ol" &&
+        tag !== "li" &&
+        tag !== "a" &&
+        tag !== "em" &&
+        tag !== "u"
+      ) {
         const parent = el.parentNode;
         while (el.firstChild) {
           parent.insertBefore(el.firstChild, el);
@@ -226,7 +239,16 @@ const ThreadItem = ({ item, hue }) => {
       {/* BODY */}
       <div className="text-[13px] text-slate-700 leading-[1.6]">
         <div
-          className={`${!expandedBody ? "max-h-[80px] overflow-hidden" : ""}`}
+          className={`prose prose-sm max-w-none text-[13px] leading-[1.7]
+  [&_p]:mb-[14px]
+  [&_ul]:mb-[14px]
+  [&_ol]:mb-[14px]
+  [&_li]:mb-[6px]
+  [&_strong]:font-semibold
+  [&_a]:text-indigo-500
+  [&_a]:underline
+  ${!expandedBody ? "max-h-[80px] overflow-hidden" : ""}
+`}
           dangerouslySetInnerHTML={{
             __html: cleanHtml(item.htmlBody || item.message || ""),
           }}
@@ -328,6 +350,7 @@ const EmailDetailModal = ({
   const [draftId, setDraftId] = useState(null);
   const fileRef = useRef(null);
   const { accounts } = useContext(userContext);
+  const [generatingAiReply, setGeneratingAiReply] = useState(false);
 
   if (!viewMail) return null;
   const hue = (viewMail.name.charCodeAt(0) * 17) % 360;
@@ -436,10 +459,38 @@ const EmailDetailModal = ({
     editorProps: {
       attributes: {
         class:
-          "w-full px-[13px] py-[10px] text-[13px] min-h-[140px] outline-none",
+          "w-full px-[13px] py-[10px] text-[13px] min-h-[140px] outline-none leading-[1.5] [&_p]:mb-[14px] [&_ul]:mb-[14px] [&_ol]:mb-[14px] [&_li]:mb-[6px] [&_strong]:font-semibold [&_a]:text-indigo-500 [&_a]:underline",
       },
     },
   });
+
+  const handleGenerateAiReply = async () => {
+    try {
+      setGeneratingAiReply(true);
+
+      const response = await generateAIReplyApi({
+        threadId: viewMail.threadId,
+        tone: "professional",
+        type: hasIncomingReply ? "reply" : "followup",
+      });
+      const result = await response.data;
+
+      if (!result.success) {
+        throw new Error(result.message || "Failed to generate AI reply");
+      }
+
+      // Set AI HTML directly into TipTap
+      editor?.commands.setContent(result.data.reply);
+
+      toast.success("AI reply generated!");
+    } catch (error) {
+      console.error(error);
+
+      toast.error(error.message || "Failed to generate AI reply");
+    } finally {
+      setGeneratingAiReply(false);
+    }
+  };
 
   return (
     <div
@@ -564,13 +615,32 @@ const EmailDetailModal = ({
               <label className="flex items-center gap-[5px] text-[11px] font-bold text-slate-400 uppercase tracking-[0.05em]">
                 <FiType size={11} /> Subject
               </label>
-              <input
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                disabled={sending}
-                placeholder="Follow-up subject…"
-                className="w-full border border-slate-200 rounded-[10px] px-[13px] py-[10px] text-[13px] text-slate-700 outline-none focus:border-indigo-500 disabled:opacity-50 disabled:bg-slate-50"
-              />
+              <div className="relative">
+                <input
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  disabled={sending || generatingAiReply}
+                  placeholder={
+                    generatingAiReply
+                      ? "AI is generating subject..."
+                      : "Follow-up subject…"
+                  }
+                  className={`w-full border rounded-[10px] px-[13px] py-[10px] text-[13px] outline-none transition
+    ${
+      generatingAiReply
+        ? "border-violet-200 bg-violet-50 text-violet-400 animate-pulse"
+        : "border-slate-200 text-slate-700 focus:border-indigo-500"
+    }
+    disabled:opacity-70`}
+                />
+
+                {/* {generatingAiReply && (
+                  <div className="absolute right-[12px] top-1/2 -translate-y-1/2 flex items-center gap-[5px] text-violet-500 text-[11px] font-medium">
+                    <FiCpu size={12} className="animate-pulse" />
+                    Writing...
+                  </div>
+                )} */}
+              </div>
             </div>
 
             {/* Message */}
@@ -598,7 +668,40 @@ const EmailDetailModal = ({
                 </div>
 
                 {/* Editor */}
-                <EditorContent editor={editor} />
+                <div className="relative">
+                  <EditorContent editor={editor} />
+
+                  {generatingAiReply && (
+                    <div className="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center rounded-[10px]">
+                      <div className="flex flex-col items-center gap-[14px]">
+                        {/* AI Orb */}
+                        <div className="relative w-[52px] h-[52px]">
+                          <div className="absolute inset-0 rounded-full bg-violet-200 animate-ping opacity-30"></div>
+
+                          <div className="absolute inset-[8px] rounded-full bg-violet-500 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.5)]">
+                            <FiCpu
+                              size={18}
+                              className="text-white animate-pulse"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Typing lines */}
+                        {/* <div className="flex flex-col gap-[8px] w-[220px]">
+                          <div className="h-[10px] rounded-full bg-gradient-to-r from-violet-100 via-violet-300 to-violet-100 animate-pulse"></div>
+
+                          <div className="h-[10px] w-[85%] rounded-full bg-gradient-to-r from-violet-100 via-violet-300 to-violet-100 animate-pulse"></div>
+
+                          <div className="h-[10px] w-[70%] rounded-full bg-gradient-to-r from-violet-100 via-violet-300 to-violet-100 animate-pulse"></div>
+                        </div> */}
+
+                        <p className="text-[12px] text-violet-600 font-medium">
+                          AI is drafting your email...
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Char count */}
@@ -651,7 +754,7 @@ const EmailDetailModal = ({
                   ref={fileRef}
                   type="file"
                   multiple
-                  disabled={sending}
+                  disabled={sending || generatingAiReply}
                   className="hidden"
                   onChange={(e) => validateAndAddFiles(e.target.files)}
                 />
@@ -696,7 +799,7 @@ const EmailDetailModal = ({
                         onClick={() =>
                           setAttachments((a) => a.filter((_, j) => j !== i))
                         }
-                        disabled={sending}
+                        disabled={sending || generatingAiReply}
                         className="text-slate-400 hover:text-red-500 transition disabled:pointer-events-none p-[4px] rounded hover:bg-red-50 flex-shrink-0"
                       >
                         <FiTrash2 size={13} />
@@ -710,9 +813,9 @@ const EmailDetailModal = ({
         )}
 
         {/* ── FOOTER ── */}
-        <div className="px-[22px] py-[14px] border-t border-slate-100 flex items-center justify-between bg-slate-50 flex-shrink-0">
+        <div className="px-[22px] py-[14px] border-t border-slate-100 bg-slate-50 flex-shrink-0">
           {!forceCompose && mode === "thread" ? (
-            <>
+            <div className="flex items-center justify-between">
               <div className="text-[11.5px] text-slate-500">
                 {threadItems.length} message
                 {threadItems.length !== 1 ? "s" : ""} in thread
@@ -734,46 +837,123 @@ const EmailDetailModal = ({
                   {hasIncomingReply ? "Reply →" : "Send Follow-up →"}
                 </button>
               </div>
-            </>
+            </div>
           ) : (
-            <>
+            <div className="flex gap-[8px]">
+              {/* AI Button - Small Secondary */}
               <button
-                onClick={() => setShowDraftPicker((v) => !v)}
-                disabled={sending}
-                className="flex items-center gap-[6px] px-[12px] py-[6px] rounded-[9px] text-[12px] font-semibold border border-indigo-200 text-indigo-500 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50 transition"
+                onClick={handleGenerateAiReply}
+                disabled={sending || generatingAiReply}
+                className="flex items-center gap-[5px] px-[10px] py-[6px] rounded-[9px] text-[11.5px] font-semibold border border-violet-200 text-violet-600 bg-violet-50 hover:bg-violet-100 disabled:opacity-50 transition"
               >
-                <FiEdit3 size={12} />
-                Use Draft
-                {showDraftPicker ? (
-                  <FiChevronUp size={11} />
+                <style>{`
+                  @keyframes starry-spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                  @keyframes twinkle {
+                    0%, 100% { opacity: 0.8; }
+                    50% { opacity: 0.3; }
+                  }
+                  .tiny-star-loader {
+                    position: relative;
+                    width: 12px;
+                    height: 12px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                  }
+                  .tiny-star-inner {
+                    position: absolute;
+                    animation: starry-spin 2.5s linear infinite;
+                  }
+                  .tiny-star-dot {
+                    position: absolute;
+                    width: 1.5px;
+                    height: 1.5px;
+                    border-radius: 50%;
+                    background: rgb(124, 58, 202);
+                  }
+                  .tiny-star-dot:nth-child(1) {
+                    top: 0;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    animation: twinkle 1.4s ease-in-out infinite;
+                  }
+                  .tiny-star-dot:nth-child(2) {
+                    bottom: 0;
+                    right: 1px;
+                    animation: twinkle 1.8s ease-in-out infinite 0.2s;
+                    opacity: 0.6;
+                  }
+                  .tiny-star-dot:nth-child(3) {
+                    bottom: 1px;
+                    left: 1px;
+                    animation: twinkle 1.6s ease-in-out infinite 0.4s;
+                    opacity: 0.5;
+                  }
+                `}</style>
+                {generatingAiReply ? (
+                  <>
+                    <div className="tiny-star-loader">
+                      <div className="tiny-star-inner">
+                        <div className="tiny-star-dot"></div>
+                        <div className="tiny-star-dot"></div>
+                        <div className="tiny-star-dot"></div>
+                      </div>
+                    </div>
+                    <span>Generating...</span>
+                  </>
                 ) : (
-                  <FiChevronDown size={11} />
+                  <>
+                    <FiCpu size={11} />
+                    <span>AI Reply</span>
+                  </>
                 )}
               </button>
 
+              {/* Draft Button */}
+              <button
+                onClick={() => setShowDraftPicker((v) => !v)}
+                disabled={sending || generatingAiReply}
+                className="flex items-center gap-[5px] px-[10px] py-[6px] rounded-[9px] text-[11.5px] font-semibold border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-50 transition"
+              >
+                <FiEdit3 size={11} />
+                Draft
+                {showDraftPicker ? (
+                  <FiChevronUp size={10} />
+                ) : (
+                  <FiChevronDown size={10} />
+                )}
+              </button>
+
+              {/* Send Button - Primary */}
               {sentSuccess ? (
-                <div className="flex items-center gap-[6px] px-[14px] py-[8px] bg-green-100 text-green-700 rounded-[10px] text-[13px] font-semibold">
-                  <FiCheck size={13} /> Sent!
+                <div className="flex items-center gap-[5px] px-[14px] py-[6px] bg-green-100 text-green-700 rounded-[9px] text-[11.5px] font-semibold">
+                  <FiCheck size={11} /> Sent!
                 </div>
               ) : (
                 <button
                   onClick={handleSend}
                   disabled={
-                    !subject.trim() || !editor?.getText().trim() || sending
+                    !subject.trim() ||
+                    !editor?.getText().trim() ||
+                    sending ||
+                    generatingAiReply
                   }
-                  className="flex items-center gap-[7px] px-[16px] py-[8px] rounded-[10px] text-[13px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed shadow-md transition"
+                  className="flex-1 flex items-center justify-center gap-[5px] px-[14px] py-[6px] rounded-[9px] text-[11.5px] font-bold bg-indigo-500 text-white hover:bg-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed shadow-md transition"
                 >
                   {sending ? (
                     <>
-                      <FiRefreshCw size={13} className="animate-spin" />{" "}
+                      <FiRefreshCw size={11} className="animate-spin" />
                       Sending…
                     </>
                   ) : (
                     <>
-                      <FiSend size={13} />{" "}
+                      <FiSend size={11} />
                       {hasIncomingReply ? "Reply" : "Send Follow-up"}
                       {attachments.length > 0 && (
-                        <span className="ml-[2px] px-[6px] py-[1px] bg-indigo-400 text-white text-[10px] rounded-full">
+                        <span className="ml-[2px] px-[5px] py-[1px] bg-indigo-400 text-white text-[9px] rounded-full">
                           {attachments.length}
                         </span>
                       )}
@@ -781,7 +961,7 @@ const EmailDetailModal = ({
                   )}
                 </button>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
