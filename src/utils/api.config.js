@@ -19,4 +19,5 @@ export const apiConfig = {
   SEND_FOLLOWUP: "/api/followup/send-followup",
   SEND_OTP: "/api/auth/send-otp",
   VERIFY_OTP: "/api/auth/verify-otp",
+  GENERATE_AI_REPLY: "/api/ai/generate-reply"
 };
