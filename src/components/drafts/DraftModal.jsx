@@ -22,16 +22,16 @@ const DraftModal = ({
 }) => {
   const isView = modalMode === "view";
   const isEdit = modalMode === "edit";
-  const editorRef = useRef(null);
+  // const editorRef = useRef(null);
 
-  useEffect(() => {
-    if (editorRef.current && body) {
-      editorRef.current.innerHTML = body;
-    }
-  }, [modalMode]);
+  // useEffect(() => {
+  //   if (editorRef.current && body) {
+  //     editorRef.current.innerHTML = body;
+  //   }
+  // }, [modalMode]);
 
   const isFormInvalid =
-    !title?.trim() || !subject?.trim() || !body || body === "<p></p>";
+    !title?.trim() || !subject?.trim() || !body?.replace(/<[^>]*>/g, "").trim();
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -52,10 +52,14 @@ const DraftModal = ({
   });
 
   useEffect(() => {
-    if (editor && body) {
-      editor.commands.setContent(body);
+    if (!editor) return;
+
+    const currentHTML = editor.getHTML();
+
+    if (body !== currentHTML) {
+      editor.commands.setContent(body || "", false);
     }
-  }, [body, editor]);
+  }, [editor, modalMode]);
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"

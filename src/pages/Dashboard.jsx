@@ -12,6 +12,7 @@ import {
 import { userContext } from "../context/userContext.js";
 import { toast } from "react-toastify";
 import { FaLongArrowAltRight } from "react-icons/fa";
+import { FiRefreshCw } from "react-icons/fi";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [followupRefreshKey, setFollowupRefreshKey] = useState(0);
+  const [analyticsFilter, setAnalyticsFilter] = useState("7d");
   const [kpi, setKpi] = useState({
     totalSent: 0,
     totalReplied: 0,
@@ -46,12 +48,13 @@ const Dashboard = () => {
       const result = await getDashboardKPI(
         accounts[0].id,
         accounts[0].gmailAccountId,
+        analyticsFilter,
       );
       setKpi(result.data.data);
     } catch (_error) {
       console.error("Failed to fetch KPI:", _error);
     }
-  }, [accounts]);
+  }, [accounts, analyticsFilter]);
 
   const handleGetSentEmails = useCallback(async () => {
     if (!accounts?.length) return;
@@ -74,7 +77,6 @@ const Dashboard = () => {
     await Promise.all([handleGetKpi(), handleGetSentEmails()]);
   }, [handleGetKpi, handleGetSentEmails]);
 
-  // ← Check replies button handler (same as FollowUpQueue)
   const handleCheckReplies = async () => {
     if (!accounts?.length) return;
     setIsRefreshing(true);
@@ -95,7 +97,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (accounts?.length) refreshAll();
-  }, [accounts, refreshAll]);
+  }, [accounts, refreshAll, analyticsFilter]);
 
   const formattedEmails = emails.slice(0, 10).map((thread) => {
     const messages = thread.messages || [];
@@ -134,19 +136,23 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-4 h-full min-h-0 font-sans">
-      {/* KPI Cards + Refresh button */}
-      <AnalyticsCards
-        kpi={kpi}
-        onRefresh={handleCheckReplies}
-        isRefreshing={isRefreshing}
-      />
+      {/* KPI Cards with Filter & Refresh */}
+      <div className="flex flex-col gap-2 shrink-0">
+        <AnalyticsCards
+          kpi={kpi}
+          onRefresh={handleCheckReplies}
+          isRefreshing={isRefreshing}
+          analyticsFilter={analyticsFilter}
+          setAnalyticsFilter={setAnalyticsFilter}
+        />
+      </div>
 
       <div className="grid grid-cols-[280px_1fr] gap-3 flex-1 min-h-0">
         <FollowupQueue
           refreshKey={followupRefreshKey}
           openFollowupModal={(lead) => {
-            setViewMail(lead); // open email modal
-            setForceCompose(true); // force compose mode
+            setViewMail(lead);
+            setForceCompose(true);
           }}
         />
 
@@ -175,7 +181,7 @@ const Dashboard = () => {
           viewMail={viewMail}
           setViewMail={(val) => {
             setViewMail(val);
-            if (!val) setForceCompose(false); // reset when closed
+            if (!val) setForceCompose(false);
           }}
           handleGetSentEmails={refreshAll}
           forceCompose={forceCompose}

@@ -187,10 +187,10 @@ export const deleteDraftApi = async (draftId) => {
   }
 };
 
-export const getDashboardKPI = async (userId, gmailAccountId) => {
+export const getDashboardKPI = async (userId, gmailAccountId, analyticsFilter) => {
   try {
     const response = await axiosclient.get(apiConfig.DASHBOARD_KPI, {
-      params: { userId, gmailAccountId },
+      params: { userId, gmailAccountId, filter: analyticsFilter },
     });
     return response.data;
   } catch (error) {
