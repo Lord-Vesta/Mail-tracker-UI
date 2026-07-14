@@ -1,9 +1,11 @@
 import { FiX, FiEdit, FiRefreshCw } from "react-icons/fi";
 import AttachmentZone from "./AttachmentZone.jsx";
 import AttachmentList from "./AttachmentList.jsx";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
+import AttachmentPreviewModal from "./AttachmentPreviewModal.jsx";
 
 const DraftModal = ({
   modalMode,
@@ -22,6 +24,7 @@ const DraftModal = ({
 }) => {
   const isView = modalMode === "view";
   const isEdit = modalMode === "edit";
+  const [previewFile, setPreviewFile] = useState(null);
   // const editorRef = useRef(null);
 
   // useEffect(() => {
@@ -34,13 +37,23 @@ const DraftModal = ({
     !title?.trim() || !subject?.trim() || !body?.replace(/<[^>]*>/g, "").trim();
 
   const editor = useEditor({
-    extensions: [StarterKit],
+    extensions: [
+      StarterKit,
+      Link.configure({
+        openOnClick: true,
+        autolink: true, // Detect links while typing
+        linkOnPaste: true, // Convert pasted URLs
+        HTMLAttributes: {
+          class: "text-blue-600 underline hover:text-blue-700",
+        },
+      }),
+    ],
     content: body || "",
     editable: !isView && !isSaving,
 
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      setBody(html); // ✅ store HTML
+      setBody(html);
     },
 
     editorProps: {
@@ -54,12 +67,16 @@ const DraftModal = ({
   useEffect(() => {
     if (!editor) return;
 
-    const currentHTML = editor.getHTML();
-
-    if (body !== currentHTML) {
+    if (body !== editor.getHTML()) {
       editor.commands.setContent(body || "", false);
     }
-  }, [editor, modalMode]);
+  }, [editor, body]);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    editor.setEditable(!isView && !isSaving);
+  }, [editor, isView, isSaving]);
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50"
@@ -156,36 +173,28 @@ const DraftModal = ({
             <label className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.05em] block mb-[7px]">
               Email Body
             </label>
-            {isView ? (
-              <div
-                className="text-[13px] text-slate-700"
-                dangerouslySetInnerHTML={{
-                  __html:
-                    body || "<span class='text-slate-300'>No content.</span>",
-                }}
-              />
-            ) : (
-              <div className="border border-slate-200 rounded-[9px] overflow-hidden">
-                {/* Toolbar */}
+
+            <div className="border border-slate-200 rounded-[9px] overflow-hidden">
+              {!isView && (
                 <div className="flex gap-1 p-2 bg-slate-50 border-b border-slate-200">
                   <button
                     onClick={() => editor?.chain().focus().toggleBold().run()}
-                    className="hover:cursor-pointer px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
                   >
                     B
                   </button>
+
                   <button
                     onClick={() => editor?.chain().focus().toggleItalic().run()}
-                    className="hover:cursor-pointer px-2 py-1 bg-white rounded hover:bg-indigo-50"
+                    className="px-2 py-1 bg-white rounded hover:bg-indigo-50"
                   >
                     I
                   </button>
                 </div>
+              )}
 
-                {/* Editor */}
-                <EditorContent editor={editor} />
-              </div>
-            )}
+              <EditorContent editor={editor} />
+            </div>
           </div>
 
           <div className="border-t border-slate-100" />
@@ -196,7 +205,10 @@ const DraftModal = ({
               Attachments
             </label>
             {isView ? (
-              <AttachmentList attachments={attachments} />
+              <AttachmentList
+                attachment={attachments}
+                onPreview={setPreviewFile}
+              />
             ) : (
               <AttachmentZone
                 attachments={attachments}
@@ -267,6 +279,10 @@ const DraftModal = ({
             )}
           </div>
         </div>
+        <AttachmentPreviewModal
+          file={previewFile}
+          onClose={() => setPreviewFile(null)}
+        />
       </div>
     </div>
   );

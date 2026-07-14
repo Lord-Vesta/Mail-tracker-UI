@@ -76,10 +76,9 @@ const Drafts = () => {
     setIsSaving(true); // ← start
     try {
       const formData = new FormData();
-      const htmlBody = document.querySelector("[contenteditable]")?.innerHTML;
       formData.append("title", title);
       formData.append("subject", subject);
-      formData.append("body", htmlBody);
+      formData.append("body", body);
       formData.append("gmailAccountId", accounts[0].gmailAccountId);
       formData.append("userId", accounts[0].id);
 
